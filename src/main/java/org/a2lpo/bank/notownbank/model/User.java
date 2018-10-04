@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
 @Entity
 @Table(name = "usr", uniqueConstraints = {
         @UniqueConstraint(columnNames = {

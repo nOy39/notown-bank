@@ -16,4 +16,9 @@ public class Client {
     private String firstName;
     private String lastName;
     private Long phone;
+    private boolean isActive;
+    @NotNull
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
