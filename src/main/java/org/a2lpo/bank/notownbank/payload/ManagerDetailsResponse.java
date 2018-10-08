@@ -16,9 +16,11 @@ public class ManagerDetailsResponse {
     private LocalDateTime blocked;
     private boolean isActive;
     private CreatedByResponse createdBy;
+    private BlockedAtResponse blockedAt;
 
     public ManagerDetailsResponse(Manager manager,
-                                  CreatedByResponse createdBy) {
+                                  CreatedByResponse createdBy,
+                                  BlockedAtResponse blockedAt) {
         this.uniqId = manager.getUniqId();
         this.firstName = manager.getFirstName();
         this.lastName = manager.getLastName();
@@ -28,5 +30,6 @@ public class ManagerDetailsResponse {
         this.blocked = manager.getBlocked();
         this.isActive = manager.getBlocked() == null ? true : false;
         this.createdBy = createdBy;
+        this.blockedAt = blockedAt;
     }
 }
