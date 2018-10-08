@@ -10,6 +10,7 @@ import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.JwtTokenProvider;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
+import org.a2lpo.bank.notownbank.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,23 +34,30 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserRepo userRepo;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepo userRepo;
+    private final RoleRepo roleRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider tokenProvider;
+    private final RoleService roleService;
 
-    @Autowired
-    RoleRepo roleRepo;
+    public AuthController(AuthenticationManager authenticationManager,
+                          UserRepo userRepo, RoleRepo roleRepo,
+                          PasswordEncoder passwordEncoder,
+                          JwtTokenProvider tokenProvider,
+                          RoleService roleService) {
+        this.authenticationManager = authenticationManager;
+        this.userRepo = userRepo;
+        this.roleRepo = roleRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
+        this.roleService = roleService;
+    }
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
-    JwtTokenProvider tokenProvider;
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse detailsUser(@CurrentUser UserPrincipal currentUser) {
 
         return new UserResponse(
@@ -94,16 +102,11 @@ public class AuthController {
                 signUpRequest.getEmail(), signUpRequest.getPassword());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Role userRole = roleRepo.findByName(RoleName.ROLE_USER)
-                .orElseThrow(() -> new AppException("User Role not set"));
-
-        user.setRoles(Collections.singleton(userRole));
-
-        User result = userRepo.save(user);
+        User result = userRepo.save(roleService.addRole(user, RoleName.ROLE_USER));
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/api/users/{username}")
-                .buildAndExpand(result.getUsername()).toUri();
+                .buildAndExpand(user.getUsername()).toUri();
 
         return ResponseEntity.created(location).body(new ApiResponse(true,
                 "User registered successfully"));

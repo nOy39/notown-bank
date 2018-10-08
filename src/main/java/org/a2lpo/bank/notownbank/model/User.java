@@ -1,8 +1,7 @@
 package org.a2lpo.bank.notownbank.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.a2lpo.bank.notownbank.model.audit.DateAudit;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
@@ -12,7 +11,7 @@ import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+
 @Entity
 @Table(name = "usr", uniqueConstraints = {
         @UniqueConstraint(columnNames = {
@@ -42,6 +41,7 @@ public class User extends DateAudit {
     @Size(max = 100)
     private String password;
 
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
