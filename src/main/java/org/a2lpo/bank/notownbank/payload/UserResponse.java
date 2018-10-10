@@ -1,6 +1,7 @@
 package org.a2lpo.bank.notownbank.payload;
 
 import lombok.Data;
+import org.a2lpo.bank.notownbank.model.Role;
 
 import java.util.List;
 
@@ -8,8 +9,7 @@ import java.util.List;
 public class UserResponse {
     private String username;
     private String email;
-    List roles;
-
+    List<Role> roles;
     public UserResponse() {
     }
 

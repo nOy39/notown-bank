@@ -1,13 +1,16 @@
 package org.a2lpo.bank.notownbank.controllers.rest.auth;
 
 import org.a2lpo.bank.notownbank.model.User;
+import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.a2lpo.bank.notownbank.payload.*;
 import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.JwtTokenProvider;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
+import org.a2lpo.bank.notownbank.service.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,15 +37,19 @@ public class AuthController {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
-
+    private final RoleService roleService;
+    
+    @Autowired
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepo userRepo,
                           PasswordEncoder passwordEncoder,
-                          JwtTokenProvider tokenProvider) {
+                          JwtTokenProvider tokenProvider,
+                          RoleService roleService) {
         this.authenticationManager = authenticationManager;
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
+        this.roleService = roleService;
     }
 
 
@@ -92,6 +99,8 @@ public class AuthController {
         User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(), signUpRequest.getPassword());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        userRepo.save(roleService.addRole(user, RoleName.ROLE_USER));
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/api/users/{username}")

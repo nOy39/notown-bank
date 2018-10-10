@@ -4,8 +4,6 @@ import org.a2lpo.bank.notownbank.model.message.AdminMessage;
 import org.a2lpo.bank.notownbank.repos.AdminMessageRepo;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-
 @Service
 public class MessageService {
 
@@ -15,8 +13,8 @@ public class MessageService {
         this.adminMessageRepo = adminMessageRepo;
     }
 
-    public void createServiceMessage(String serviceComment, URI location, Object object) {
-        String message = "Create new manager, view details info "+location;
+    public void createServiceMessage(String serviceComment, String location) {
+        String message = "Create new manager, view details info " + location;
         AdminMessage adminMessage = new AdminMessage(message, serviceComment);
         adminMessageRepo.save(adminMessage);
     }

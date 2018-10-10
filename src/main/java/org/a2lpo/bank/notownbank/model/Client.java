@@ -1,6 +1,7 @@
 package org.a2lpo.bank.notownbank.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
 import org.hibernate.annotations.NaturalId;
 
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
         })
 })
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class Client extends UserDateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

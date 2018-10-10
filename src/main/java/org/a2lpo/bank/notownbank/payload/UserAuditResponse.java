@@ -7,13 +7,13 @@ import org.a2lpo.bank.notownbank.model.User;
 import java.util.Set;
 
 @Data
-public class BlockedAtResponse {
+public class UserAuditResponse {
     private Long id;
     private String username;
     private String email;
     private Set<Role> roles;
 
-    public BlockedAtResponse(User admin) {
+    public UserAuditResponse(User admin) {
         this.id = admin.getId();
         this.username = admin.getUsername();
         this.email = admin.getEmail();
