@@ -6,7 +6,6 @@ import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.a2lpo.bank.notownbank.payload.*;
 import org.a2lpo.bank.notownbank.repos.ManagerRepo;
-import org.a2lpo.bank.notownbank.repos.RoleRepo;
 import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
@@ -22,7 +21,6 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 //todo сделать блокировку менеджера,
@@ -35,18 +33,15 @@ public class AdminController {
 
     private final UserRepo userRepo;
     private final ManagerRepo managerRepo;
-    private final RoleRepo roleRepo;
     private final RoleService roleService;
     private final MessageService messageService;
 
     public AdminController(UserRepo userRepo,
                            ManagerRepo managerRepo,
-                           RoleRepo roleRepo,
                            RoleService roleService,
                            MessageService messageService) {
         this.userRepo = userRepo;
         this.managerRepo = managerRepo;
-        this.roleRepo = roleRepo;
         this.roleService = roleService;
         this.messageService = messageService;
     }
@@ -65,25 +60,17 @@ public class AdminController {
      * статус выполнения операции с сообщением в формате JSON.
      */
     @PostMapping("/managers/add")
-    public ResponseEntity<?> newManager(
+    public ResponseEntity<ApiResponse> newManager(
             @Valid @RequestBody ManagerAddRequest addRequest,
             @CurrentUser UserPrincipal userPrincipal) {
-        boolean isManager;
+
         Optional<User> userById = userRepo.findById(addRequest.getUserId());
 
-        /* Проверка есть ли у `Optional<User> userById` ROLE_MANAGER, юзера с указанным id
-        не существует то по exception выкинет пользователю сообщение об отсутствии такого юзера
-         */
-        try {
-            isManager = userById.get().getRoles()
-                    .stream()
-                    .map(Role::getName)
-                    .anyMatch(n -> n == RoleName.ROLE_MANAGER);
+        boolean isManager = userById.isPresent() && userById.get().getRoles()
+                .stream()
+                .map(Role::getName)
+                .anyMatch(n -> n == RoleName.ROLE_MANAGER);
 
-        } catch (NoSuchElementException e) {
-            return new ResponseEntity<>(new ApiResponse(false, "User not found"),
-                    HttpStatus.NO_CONTENT);
-        }
         /*
         Если user не имеет ROLE_MANAGER то создаем менеджера в таблице, сохраняем его и добавляем к его ролям
         ROLE_MANAGER в случае ошибки сохранения менеджера кидаем ексепшн пользователю, после сохранения
@@ -131,7 +118,7 @@ public class AdminController {
      * @return возвращает ResponseEntity
      */
     @GetMapping("/managers/{uuid}")
-    public ResponseEntity<?> loadManager(@PathVariable("uuid") String uuid) {
+    public ResponseEntity<Object> loadManager(@PathVariable("uuid") String uuid) {
 
         Optional<Manager> manager = managerRepo.findByUniqId(uuid);
         if (manager.isPresent()) {
@@ -151,25 +138,26 @@ public class AdminController {
      * @return
      */
     @GetMapping("/managers/list")
-    public ResponseEntity<?> getManagersList() {
+    public ResponseEntity<Object> getManagersList() {
 
         List<ManagerListResponse> managerList = new ArrayList<>();
-        managerRepo.findAll().forEach(m -> {
+        managerRepo.findAll().forEach(m ->
             managerList.add(new ManagerListResponse(
                     m.getId(),
                     m.getFirstName(),
                     m.getLastName(),
                     m.getUniqId(),
                     m.getPersonalPage(),
-                    m.getBlocked() == null ? true : false));
-        });
+                    m.getBlocked() == null))
+        );
         return ResponseEntity.ok(managerList);
     }
+
     //TODO раскидать ексепшены, подключить логи
     @PostMapping("/managers/{uuid}")
-    public ResponseEntity<?> modifyManager(@PathVariable("uuid") String uuid,
-                                           @Valid @RequestBody ManagerEditRequest managerRequest,
-                                           @CurrentUser UserPrincipal currentUser) {
+    public ResponseEntity<Object> modifyManager(@PathVariable("uuid") String uuid,
+                                                @Valid @RequestBody ManagerEditRequest managerRequest,
+                                                @CurrentUser UserPrincipal currentUser) {
         Optional<Manager> byUniqId = managerRepo.findByUniqId(uuid);
         if (byUniqId.isPresent()) {
             Manager currentManager = byUniqId.get();

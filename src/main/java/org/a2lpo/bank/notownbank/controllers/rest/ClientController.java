@@ -5,11 +5,8 @@ import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.payload.ApiResponse;
 import org.a2lpo.bank.notownbank.payload.ClientRequest;
 import org.a2lpo.bank.notownbank.repos.ClientRepo;
-import org.a2lpo.bank.notownbank.repos.RoleRepo;
-import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
-import org.a2lpo.bank.notownbank.service.ClientsService;
 import org.a2lpo.bank.notownbank.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,30 +23,20 @@ import java.util.Optional;
 public class ClientController {
 
     private final ClientRepo clientRepo;
-    private final ClientsService clientsService;
     private final UserService userService;
-    private final RoleRepo roleRepo;
-    private final UserRepo userRepo;
 
     public ClientController(ClientRepo clientRepo,
-                            ClientsService clientsService,
-                            UserService userService,
-                            RoleRepo roleRepo,
-                            UserRepo userRepo) {
+                            UserService userService) {
         this.clientRepo = clientRepo;
-        this.clientsService = clientsService;
         this.userService = userService;
-        this.roleRepo = roleRepo;
-        this.userRepo = userRepo;
     }
 
 
     @PostMapping("/add")
-    public ResponseEntity<?> registration(@CurrentUser UserPrincipal userPrincipal,
+    public ResponseEntity<Object> registration(@CurrentUser UserPrincipal userPrincipal,
                                           @Valid @RequestBody ClientRequest clientRequest) {
 
         Optional<User> userExtract = userService.extractUser(userPrincipal);
-
         if (!clientRepo.findByUser(userExtract.get()).isPresent()) {
             Client newClient = new Client(clientRequest.getFirstName(),
                     clientRequest.getLastName(),

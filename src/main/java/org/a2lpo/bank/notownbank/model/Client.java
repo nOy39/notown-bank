@@ -1,6 +1,7 @@
 package org.a2lpo.bank.notownbank.model;
 
 import lombok.Data;
+import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.*;
@@ -24,7 +25,7 @@ import java.time.LocalDateTime;
         })
 })
 @Data
-public class Client {
+public class Client extends UserDateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

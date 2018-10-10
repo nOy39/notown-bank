@@ -7,7 +7,7 @@ import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
-
+//todo сделать скрипты миграции готовых таблиц
 @SpringBootApplication
 @EntityScan(basePackageClasses = {
 		NotownBankApplication.class,

@@ -26,9 +26,8 @@ public class ManagerDetailsResponse {
         this.lastName = manager.getLastName();
         this.username = manager.getUser().getUsername();
         this.email = manager.getUser().getEmail();
-        this.created = manager.getCreated();
         this.blocked = manager.getBlocked();
-        this.isActive = manager.getBlocked() == null ? true : false;
+        this.isActive = manager.getBlocked() != null;
         this.createdBy = createdBy;
         this.blockedAt = blockedAt;
     }

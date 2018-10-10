@@ -1,7 +1,6 @@
 package org.a2lpo.bank.notownbank.model.message;
 
 import lombok.Data;
-import org.a2lpo.bank.notownbank.model.User;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;

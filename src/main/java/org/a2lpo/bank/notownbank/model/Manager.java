@@ -1,6 +1,8 @@
 package org.a2lpo.bank.notownbank.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.a2lpo.bank.notownbank.model.audit.DateAudit;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -8,7 +10,7 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.UUID;
-//todo сделать поля updatedAt и createAt
+
 @Entity
 @Table(name = "manager", uniqueConstraints = {
         @UniqueConstraint(columnNames = {
@@ -19,7 +21,8 @@ import java.util.UUID;
         })
 })
 @Data
-public class Manager {
+@EqualsAndHashCode(callSuper = false)
+public class Manager extends DateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -31,8 +34,6 @@ public class Manager {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
-    @NotNull
-    private LocalDateTime created;
     @NotNull
     private String uniqId;
     private boolean isActive;
@@ -54,7 +55,6 @@ public class Manager {
         this.user = user;
         this.uniqId = UUID.randomUUID().toString();
         this.createdBy = createdBy;
-        this.created = LocalDateTime.now();
         this.isActive = true;
     }
 }

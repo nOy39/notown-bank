@@ -1,17 +1,13 @@
 package org.a2lpo.bank.notownbank.controllers.rest.auth;
 
-import org.a2lpo.bank.notownbank.exceptions.AppException;
-import org.a2lpo.bank.notownbank.model.Role;
 import org.a2lpo.bank.notownbank.model.User;
-import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.a2lpo.bank.notownbank.payload.*;
-import org.a2lpo.bank.notownbank.repos.RoleRepo;
 import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.JwtTokenProvider;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
-import org.a2lpo.bank.notownbank.service.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,32 +23,26 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
+    final static Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepo userRepo;
-    private final RoleRepo roleRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
-    private final RoleService roleService;
 
     public AuthController(AuthenticationManager authenticationManager,
-                          UserRepo userRepo, RoleRepo roleRepo,
+                          UserRepo userRepo,
                           PasswordEncoder passwordEncoder,
-                          JwtTokenProvider tokenProvider,
-                          RoleService roleService) {
+                          JwtTokenProvider tokenProvider) {
         this.authenticationManager = authenticationManager;
         this.userRepo = userRepo;
-        this.roleRepo = roleRepo;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
-        this.roleService = roleService;
     }
 
 
@@ -72,7 +62,8 @@ public class AuthController {
 
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(
+            @Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsernameOrEmail(),
@@ -87,7 +78,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+    public ResponseEntity<ApiResponse> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if (userRepo.existsByUsername(signUpRequest.getUsername())) {
             return new ResponseEntity<>(new ApiResponse(false, "Username is already taken!"),
                     HttpStatus.BAD_REQUEST);
@@ -101,8 +92,6 @@ public class AuthController {
         User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(), signUpRequest.getPassword());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        User result = userRepo.save(roleService.addRole(user, RoleName.ROLE_USER));
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath().path("/api/users/{username}")
