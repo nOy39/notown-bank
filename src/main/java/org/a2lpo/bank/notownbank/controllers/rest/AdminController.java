@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 //TODO Попробовать responseEntity сделать с header`om, и body
 @RestController
 @PreAuthorize("hasRole('ADMIN')")
@@ -65,11 +66,12 @@ public class AdminController {
             @Valid @RequestBody ManagerAddRequest addRequest) {
 
         Optional<User> userById = userRepo.findById(addRequest.getUserId());
-        boolean isVerifiedUser = userById.isPresent()
-                && userById.get().getRoles()
-                .stream()
-                .map(Role::getName)
-                .noneMatch(n -> n == RoleName.ROLE_MANAGER || n == RoleName.ROLE_CLIENT);
+        boolean isVerifiedUser = userById.isPresent() &&
+                userById.get().getRoles()
+                        .stream()
+                        .map(Role::getName)
+                        .noneMatch(n -> n == RoleName.ROLE_MANAGER || n == RoleName.ROLE_CLIENT) &&
+                !managerRepo.findByUser(userById.get()).isPresent();
 
         if (isVerifiedUser) {
             Manager manager = new Manager(addRequest.getFirstName(),
@@ -130,6 +132,7 @@ public class AdminController {
 
     /**
      * Список всех менеджеров в формате json
+     *
      * @return возвращает список ManagerListResponse
      */
     @GetMapping("/managers/list")
@@ -150,16 +153,17 @@ public class AdminController {
      * то делаем замену, если поле isActive == false, то выполняем метод blockManager из сервиса ManagerService.
      * После того как менеджер заблокируется в таблице отправляем пользователю ответ с детальной информацией о текущем менеджере.
      * Если менеджер не был найден, то пользователю кидаем страницу с сообщением со статусом 400.
-     * @param managerUUId Уникальный номер менеджера
+     *
+     * @param managerUUId    Уникальный номер менеджера
      * @param managerRequest json запрос от пользователя содержащий 3 поля (firstName, lastName, isActive)
-     * @param userPrincipal текущий авторизированный пользователь который будет занесён в таблицу как пользователь
-     *                      заблокировавший данного менеджера
+     * @param userPrincipal  текущий авторизированный пользователь который будет занесён в таблицу как пользователь
+     *                       заблокировавший данного менеджера
      * @return - ответ пользователю в виде ResponseEntity содержащий json в теле и HTTP.status
      */
     @PutMapping("/managers/{uuid}")
     public ResponseEntity<Object> modifyManager(@PathVariable("uuid") String managerUUId,
-                                           @RequestBody CurrentManagerRequest managerRequest,
-                                           @CurrentUser UserPrincipal userPrincipal) {
+                                                @RequestBody CurrentManagerRequest managerRequest,
+                                                @CurrentUser UserPrincipal userPrincipal) {
         Long id;
         try {
             id = Long.valueOf(managerUUId);
