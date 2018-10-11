@@ -94,4 +94,5 @@ public class ClientController {
         return ResponseEntity.ok(new ApiResponse(true, "Congratulations, you are registered as a Bank customer," +
                 " you can now fully operate the system."));
     }
+
 }
