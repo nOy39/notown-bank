@@ -1,5 +1,6 @@
 package org.a2lpo.bank.notownbank.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.a2lpo.bank.notownbank.model.audit.DateAudit;
@@ -43,6 +44,7 @@ public class User extends DateAudit {
 
     @NotBlank
     @Size(max = 100)
+    @JsonIgnore
     private String password;
 
     @Cascade(org.hibernate.annotations.CascadeType.ALL)

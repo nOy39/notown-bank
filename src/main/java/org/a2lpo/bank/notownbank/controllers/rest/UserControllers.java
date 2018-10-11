@@ -1,4 +1,4 @@
-package org.a2lpo.bank.notownbank.controllers.rest.auth;
+package org.a2lpo.bank.notownbank.controllers.rest;
 
 import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.repos.UserRepo;

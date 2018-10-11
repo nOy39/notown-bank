@@ -13,6 +13,7 @@ import org.a2lpo.bank.notownbank.service.ManagerService;
 import org.a2lpo.bank.notownbank.service.MessageService;
 import org.a2lpo.bank.notownbank.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +30,8 @@ import java.util.Optional;
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/control")
 public class AdminController {
+    @Value("${app.message.internal}")
+    private String internalErrorMessage;
 
     private final UserRepo userRepo;
     private final ManagerRepo managerRepo;
@@ -48,6 +51,7 @@ public class AdminController {
         this.messageService = messageService;
         this.managerService = managerService;
     }
+
 
     /**
      * Метод создания менеджера, принимает на вход addRequest существующего пользователя
@@ -90,7 +94,7 @@ public class AdminController {
                 );
             } catch (Exception e) {
                 //todo вставить сюда логирование
-                return new ResponseEntity<>(new ApiResponse(false, "Something Shit... 乁( ͡ಠ ʖ̯ ͡ಠ)ㄏ "),
+                return new ResponseEntity<>(new ApiResponse(false, "Something Shit... 乁( ͡ಠ ʖ̯ ͡ಠ)ㄏ"),
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
             messageService.createServiceMessage("Registration manager", manager.getPersonalPage());

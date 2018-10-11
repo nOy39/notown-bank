@@ -11,7 +11,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "clients", uniqueConstraints = {
@@ -44,7 +43,6 @@ public class Client extends UserDateAudit {
     private String email;
     private boolean isActive;
     private LocalDate dateOfBirth;
-    private LocalDateTime dateOfRegistration;
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
@@ -64,7 +62,6 @@ public class Client extends UserDateAudit {
         this.email = user.getEmail();
         this.isActive = false;
         this.dateOfBirth = dateOfBirth;
-        this.dateOfRegistration = LocalDateTime.now();
         this.user = user;
     }
 }
