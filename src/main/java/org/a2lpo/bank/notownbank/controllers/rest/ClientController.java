@@ -88,11 +88,10 @@ public class ClientController {
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
-            return new ResponseEntity<>(new ApiResponse(false, "TYou are already a customer of the Bank," +
+            return new ResponseEntity<>(new ApiResponse(false, "You are already a customer of the Bank," +
                     " re-registration is not possible."), HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.ok(new ApiResponse(true, "Congratulations, you are registered as a Bank customer," +
                 " you can now fully operate the system."));
     }
-
 }
