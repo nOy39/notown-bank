@@ -1,7 +1,7 @@
 package org.a2lpo.bank.notownbank.model.message;
 
 import lombok.Data;
-import org.a2lpo.bank.notownbank.model.accounts.Account;
+import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
 import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
 import org.a2lpo.bank.notownbank.model.audit.DateAudit;
 
@@ -20,26 +20,26 @@ public class HistoryOutputPayment extends DateAudit {
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "from_account_id")
-    private Account byFrom;
+    private PersonalAccount byFrom;
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "to_account_id")
-    private Account byTo;
+    private PersonalAccount byTo;
     private BigDecimal sum;
     private BigDecimal commission;
     @Enumerated(EnumType.STRING)
     @Column(length = 60)
     private CurrencyName name;
 
-    public HistoryOutputPayment(@NotNull Account byFrom,
-                                @NotNull Account byTo,
+    public HistoryOutputPayment(@NotNull PersonalAccount byFrom,
+                                @NotNull PersonalAccount byTo,
                                 BigDecimal sum,
                                 BigDecimal commission) {
         this.byFrom = byFrom;
         this.byTo = byTo;
         this.sum = sum;
         this.commission = commission;
-        this.name = byFrom.getCurrencyName().getName();
+        this.name = byFrom.getCurrency().getName();
     }
 
     @Override

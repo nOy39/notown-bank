@@ -12,5 +12,5 @@ public class CreateAccountRequest {
     private CurrencyName currencyName;
     @NotNull
     private TypeAccountName typeAccountName;
-
+    private boolean isDefault;
 }

@@ -1,6 +1,6 @@
 package org.a2lpo.bank.notownbank.service;
 
-import org.a2lpo.bank.notownbank.model.accounts.Account;
+import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
 import org.a2lpo.bank.notownbank.model.message.HistoryInputPayment;
 import org.a2lpo.bank.notownbank.model.message.HistoryOutputPayment;
 import org.a2lpo.bank.notownbank.repos.HistoryInputRepo;
@@ -20,7 +20,7 @@ public class HistoryService {
         this.inputRepo = inputRepo;
     }
 
-    public void saveCurrentTransfer(Account from, Account to, BigDecimal sum, BigDecimal commission) {
+    public void saveCurrentTransfer(PersonalAccount from, PersonalAccount to, BigDecimal sum, BigDecimal commission) {
         outputRepo.save(new HistoryOutputPayment(from, to, sum, commission));
         inputRepo.save(new HistoryInputPayment(to, from, sum));
     }

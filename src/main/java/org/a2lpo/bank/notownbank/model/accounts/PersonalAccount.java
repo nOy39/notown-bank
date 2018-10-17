@@ -12,7 +12,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "account")
 @Data
-public class Account extends UserDateAudit {
+public class PersonalAccount extends UserDateAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -20,24 +20,25 @@ public class Account extends UserDateAudit {
     @NotNull
     private String uniqCheckId;
     private boolean isBlocked;
+    private boolean isDefault;
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "client_id")
     private Client client;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "currency_id")
-    private Currency currencyName;
+    private Currency currency;
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "type_id")
     private TypeAccount typeAccount;
 
-    public Account(@NotNull Client client,
-                   Currency currencyName,
-                   TypeAccount typeAccount) {
+    public PersonalAccount(@NotNull Client client,
+                           Currency currency,
+                           TypeAccount typeAccount) {
         this.sum = BigDecimal.valueOf(0.00);
         this.uniqCheckId = UUID.randomUUID().toString();
         this.client = client;
-        this.currencyName = currencyName;
+        this.currency = currency;
         this.typeAccount = typeAccount;
     }
 }
