@@ -1,10 +1,12 @@
 package org.a2lpo.bank.notownbank.payload;
 
+import org.springframework.http.HttpStatus;
+
 public class ApiResponse {
     private Boolean success;
     private String message;
 
-    public ApiResponse() {
+    public ApiResponse(boolean b, String format, HttpStatus forbidden) {
     }
 
     public ApiResponse(Boolean success, String message) {

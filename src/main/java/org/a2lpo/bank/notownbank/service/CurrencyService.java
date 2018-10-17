@@ -1,5 +1,6 @@
 package org.a2lpo.bank.notownbank.service;
 
+import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,18 +16,32 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * Сервис получения котировок валют с сайта ЦБРФ
+ */
 @Service
 public class CurrencyService {
-    @Value("${app.webpage.currentCurseCurrency}")
+    @Value("${app.webpage.currentCurseCurrency}")   //сайт центрбанка
     private String webPage;
 
     /**
-     * Получаем список валют с курсом на текущую дату с сайта центрбанка
-     *todo задокументировать
-     * @return
-     * @throws IOException
+     * <b>Метод получения списка валют с сайта центрбанка</b><br>
+     *     <p>Так как в котировках валют с ЦБРФ нет Российского рубля, то предварительно
+     *     в список <code>ArrayList<CurrentCurseCurrency> currencyList</code>, который будет возвращать
+     *     метод, добавляем валюту Российский рубль.</p><br>
+     *     Метод получает c сайта центрбанка котировки валют на текущий день
+     *     в формате JSON, далее парсингом из json получаем объект JsonObject.
+     *     Далее получаем из JsonObject коллекцию <code>Set<Map.Entry<String, JsonElement>> entries</code>
+     *     И по коллекции <code>entries</code> пробегаясь циклом for
+     *     проходит десериализация <code>CurrentCurseCurrency</code>, полученый объект
+     *     помещаем в список <code>ArrayList<CurrentCurseCurrency> currencyList</code>)
+     * @return currencyList возвращаемый список содержащий объекты валют.
+     * @throws IOException пробрасываемый на уровень вверх IOException
      */
     public List<CurrentCurseCurrency> getCurrentCurrency() throws IOException {
         ArrayList<CurrentCurseCurrency> currencyList = new ArrayList<>();
@@ -50,25 +65,19 @@ public class CurrencyService {
                 currencyList.add(currentCurseCurrency);
             }
         }
-
         return currencyList;
     }
 
     /**
-     * Получаем курс валюты из списка валют.
-     *  todo задокументировать
-     * @param currencyList
-     * @param name
-     * @return
+     * <b>Метод получения запрашиваемой котировки валюты из списка валют</b><br>
+     *     Итерацией находим запрашиваемую валюту в списке и возвращаем её на уровень выше.
+     * @param currencyList список валют, полученый из ЦБ и десерелизован в список объектов
+     *                     <code>CurrentCurseCurrency</code>
+     * @param name валюта которую мы ищем в списке.
+     * @return возвращаемый объект класса <code>CurrentCurseCurrency</code>
      */
     public CurrentCurseCurrency getCurrencyCurse(List<CurrentCurseCurrency> currencyList, CurrencyName name) {
-
-        for (CurrentCurseCurrency currentCurseCurrency : currencyList) {
-            boolean equals = currentCurseCurrency.getCharCode().equals(name.toString());
-            if (equals) {
-                return currentCurseCurrency;
-            }
-        }
-        return new CurrentCurseCurrency();
+        return  Iterables.tryFind(currencyList,
+                currency -> name.toString().equals(currency.getCharCode())).or(new CurrentCurseCurrency());
     }
 }

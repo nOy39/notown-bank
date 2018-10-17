@@ -7,6 +7,9 @@ import org.hibernate.annotations.NaturalId;
 import javax.persistence.*;
 import java.io.Serializable;
 
+/**
+ * Промежуточная таблица Валют
+ */
 @Entity
 @Table(name = "currency")
 @Data

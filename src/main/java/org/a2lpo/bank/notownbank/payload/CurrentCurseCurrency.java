@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * DTO для десериализации валюты из котировок центрбанка рф.
+ */
 @Data
 public class CurrentCurseCurrency {
     private String ID;

@@ -5,7 +5,9 @@ import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-//todo задокументировать класс
+
+/**  Класс служебных счетов банка.
+ */
 @Data
 @Entity
 @Table(name = "service_account")

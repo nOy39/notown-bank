@@ -6,6 +6,9 @@ import org.hibernate.annotations.NaturalId;
 import javax.persistence.*;
 import java.io.Serializable;
 
+/**
+ * таблица типов соотношений типо счетов
+ */
 @Entity
 @Table(name = "type")
 @Data
