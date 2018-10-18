@@ -233,10 +233,10 @@ public class AccountsController {
         try {   //проверка на правильность ввода счетов.
             from = accountRepo
                     .findActiveAccountByUUID(changeRequest.getFromAccountId())
-                    .orElseThrow(() -> new NoEntityException("PersonalAccount",
+                    .orElseThrow(() -> new VerificationNoEntityException("Not found account or %s is inactive, for client.",
                             changeRequest.getFromAccountId()));
             to = accountRepo.findActiveAccountByUUID(changeRequest.getToAccountId())
-                    .orElseThrow(() -> new NoEntityException("PersonalAccount",
+                    .orElseThrow(() -> new VerificationNoEntityException("Not found account or %s is inactive, for client.",
                             changeRequest.getToAccountId()));
         } catch (NoEntityException e) {
             logger.error("ERROR", e);
@@ -300,17 +300,14 @@ public class AccountsController {
         try {
             //поиск и проверка номера счета.
             from = accountRepo.findActiveAccountByUUID(sellRequest.getAccountId())
-                    .orElseThrow(() -> new ResourceNotFoundException("PersonalAccount",
-                            sellRequest.getAccountId(),
-                            new ApiResponse(false,
-                                    "Reason exception maybe not correct account number, " +
-                                            "or account may be blocked, you can checked, to account list")));
+                    .orElseThrow(() -> new VerificationNoEntityException("Not found account or %s is inactive, for client.",
+                            sellRequest.getAccountId()));
 
             //noinspection OptionalGetWithoutIsPresent because curRuble cant be null
             to = accountRepo.findDefaultAccounts(from.getClient().getId(), curRuble.get().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("PersonalAccount",
-                            "No account with 'defaults' value",
-                            new PersonalAccount()));
+                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s %s",
+                            sellRequest.getAccountId(), 
+                            from.getClient().getLastName()));
 
         } catch (Exception e) {
             logger.error("ERROR", e);

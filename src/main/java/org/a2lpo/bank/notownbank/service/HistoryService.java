@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
+/**
+ * Сервис записи в БД информации о снятии и поступлении денежных средств со счетов клиентов
+ */
 @Service
 public class HistoryService {
     private final HistoryOutputRepo outputRepo;
@@ -22,24 +25,26 @@ public class HistoryService {
 
     /**
      * Метод записывает в таблицу расходов и таблицу приходов информацию о переводе.
-     * todo задокументировать нормально
-     * @param from
-     * @param to
-     * @param sum
-     * @param commission
+     * @param from счет с которого снялись денежные средства
+     * @param to счет куда зачислились
+     * @param sum сумма
+     * @param commission информация о комиссии банка
      */
-    public void saveCurrentTransfer(PersonalAccount from, PersonalAccount to, BigDecimal sum, BigDecimal commission) {
+    public void saveCurrentTransfer(PersonalAccount from,
+                                    PersonalAccount to,
+                                    BigDecimal sum,
+                                    BigDecimal commission) {
         outputRepo.save(new HistoryOutputPayment(from, to, sum, commission));
         inputRepo.save(new HistoryInputPayment(to, from, sum));
     }
 
     /**
      * Метод записи в таблицы расходов/приходов информации о валютных операциях
-     * @param from
-     * @param to
-     * @param sumToSold
-     * @param sumToAccount
-     * @param bankCommission
+     * @param from счет с которого снялись денежные средства
+     * @param to счет куда зачислились
+     * @param sumToSold сумма продажи
+     * @param sumToAccount сумма зачисления
+     * @param bankCommission комиссия банка
      */
     public void saveCurrencyOperation(PersonalAccount from,
                                       PersonalAccount to,

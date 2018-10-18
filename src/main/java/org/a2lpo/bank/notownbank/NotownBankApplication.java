@@ -22,7 +22,7 @@ public class NotownBankApplication implements ApplicationRunner{
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
         logger.debug("This is a debug message");
         logger.info("This is an info message");
         logger.warn("This is a warn message");

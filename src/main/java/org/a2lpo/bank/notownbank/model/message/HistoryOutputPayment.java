@@ -10,6 +10,9 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * Клиентская таблица расходов с расчетного счета
+ */
 @Entity
 @Table(name = "transfer_output_log")
 @Data
@@ -58,6 +61,6 @@ public class HistoryOutputPayment extends DateAudit {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, byFrom, byTo, sum, commission, name);
+        return Math.toIntExact(this.id);
     }
 }

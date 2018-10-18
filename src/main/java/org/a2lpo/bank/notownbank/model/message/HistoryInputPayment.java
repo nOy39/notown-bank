@@ -10,6 +10,9 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * таблица приходов денежных средств на счет клиента
+ */
 @Entity
 @Table(name = "transfer_input_log")
 @Data

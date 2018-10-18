@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-//TODO Попробовать responseEntity сделать с header`om, и body
 @RestController
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/control")
