@@ -1,6 +1,8 @@
 package org.a2lpo.bank.notownbank.controllers.rest;
 
 import org.a2lpo.bank.notownbank.exceptions.NoEntityException;
+import org.a2lpo.bank.notownbank.exceptions.ResourceNotFoundException;
+import org.a2lpo.bank.notownbank.exceptions.VerificationNoEntityException;
 import org.a2lpo.bank.notownbank.model.Client;
 import org.a2lpo.bank.notownbank.model.accounts.Currency;
 import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
@@ -154,7 +156,7 @@ public class AccountsController {
      * будет ResponseEntity.ok
      *
      * @param userPrincipal  авторизированный пользователь в Spring Security Context
-     * @param paymentRequest - запрос от клиента в формате json содержит 3 поля (<code>String fromAccountId</code>,
+     * @param paymentRequest - запрос от клиента в формате json содержит 3 поля (<code>String accountId</code>,
      *                       <code>String toAccountId</code>,<code>BigDecimal sum</code>) (счёт отправителя, счёт получателя, сумма перевода)
      * @return возвращает <code>ApiResponse</code> содержащий в себе 2 значение
      * <code>boolean status</code> - состояние выполненной операции и <code>String message</code> - текстовое сообщение
@@ -164,8 +166,8 @@ public class AccountsController {
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<Object> sendMoney(@CurrentUser UserPrincipal userPrincipal,
                                             @Valid @RequestBody PaymentRequest paymentRequest) {
-        Optional<PersonalAccount> toAccount = accountRepo.findCheckByUniqID(paymentRequest.getToAccountId());
-        Optional<PersonalAccount> fromAccount = accountRepo.findCheckByUniqID(paymentRequest.getFromAccountId());
+        Optional<PersonalAccount> toAccount = accountRepo.findActiveAccountByUUID(paymentRequest.getToAccountId());
+        Optional<PersonalAccount> fromAccount = accountRepo.findActiveAccountByUUID(paymentRequest.getFromAccountId());
 
         //проверка автора запроса, в том что он хозяин счёта
         boolean isMasterAccountFrom = fromAccount.isPresent() &&
@@ -202,7 +204,7 @@ public class AccountsController {
 
     /**
      * <b>Метод доступен только пользователям с Ролью Client</b><br>
-     * POST метод обмена валют. От пользователя приходит json запрос <code>ChangeCurrencyRequest changeRequest</code>.<br>
+     * POST метод обмена валют. От пользователя приходит json запрос <code>PaymentRequest changeRequest</code>.<br>
      * В методе проходит 3 проверки.<br>
      * 1. Счета ищуться в базе и в случае если один из них не найден кидает NoEntityException<br>
      * 2. Выполняется проверка на то, что найденные счета не заблокированы.<br>
@@ -213,27 +215,27 @@ public class AccountsController {
      * ResponseEntity вернуть пользователю.
      *
      * @param userPrincipal авторизированный пользователь в Spring Security Context
-     * @param changeRequest DTO запрос от клиента в формате json содержит 3 поля (<code>String fromAccountId</code>,
+     * @param changeRequest DTO запрос от клиента в формате json содержит 3 поля (<code>String accountId</code>,
      *                      <code>String toAccountId</code>,<code>BigDecimal sum</code>
      *                      (счёт списания, счёт зачисления, сумма списания)
      * @return возвращает <code>ApiResponse</code> содержащий в себе 2 значение
-     *         <code>boolean status</code> - состояние выполненной операции и
-     *         <code>String message</code> - текстовое сообщение
-     *         о результатах выполненной операции в JSON формате.
+     * <code>boolean status</code> - состояние выполненной операции и
+     * <code>String message</code> - текстовое сообщение
+     * о результатах выполненной операции в JSON формате.
      */
     @PostMapping
     @RequestMapping("change")
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<ApiResponse> changeCurrency(@CurrentUser UserPrincipal userPrincipal,
-                                                      @Valid @RequestBody ChangeCurrencyRequest changeRequest) {
+                                                      @Valid @RequestBody PaymentRequest changeRequest) {
         PersonalAccount from;
         PersonalAccount to;
         try {   //проверка на правильность ввода счетов.
             from = accountRepo
-                    .findCheckByUniqID(changeRequest.getFromAccountId())
+                    .findActiveAccountByUUID(changeRequest.getFromAccountId())
                     .orElseThrow(() -> new NoEntityException("PersonalAccount",
                             changeRequest.getFromAccountId()));
-            to = accountRepo.findCheckByUniqID(changeRequest.getToAccountId())
+            to = accountRepo.findActiveAccountByUUID(changeRequest.getToAccountId())
                     .orElseThrow(() -> new NoEntityException("PersonalAccount",
                             changeRequest.getToAccountId()));
         } catch (NoEntityException e) {
@@ -263,69 +265,115 @@ public class AccountsController {
     }
 
     /**
-     * todo задокументировать, отрефакторить сделать правильную проверку на корректность операции с нормальными выводами по ситуативным ошибкам
-     * todo сделать красиво в requeste `sum` можно запутаться с тем, что, куда, переводим...
-     * todo проработать исключительные ситуации
+     * <b>Метод доступен только пользователям с Ролью Client</b><br>
+     * POST метод продажи валюты в рубли. Зачисление с продажи валюты происходит на  дефолтный рублёвый счёт клиента.
+     * От пользователя приходит json запрос <code>TradingCurrencyRequest sellRequest</code>.
+     * Со счётом с которого списывается валюта и суммой списания, после выполнения проверок вызывается метод
+     * <code>currencyOperation</code> в который параметром счёта получателя передается предварительно найденный дефолтный рублёвый счет<br>
+     * Проверки:<br>
+     * 1. Поиск счетов из json запроса и дефолтного счёта в базе. Для поиска счета отправителя в строке запроса указывается,
+     * что счет не должен быть заблокирован, тем самым делается пассивная проверка счета на статус блокировки.<br>
+     * 2. Проверка пользователя авторизированного в системе на принадлежность к счету отправителя<br>
+     * <p>
+     * При не удачной проверке любого из пунктов выходит из метода и кидает пользователю сообщение об ошибке.<br>
+     * Если все проверки пройдены то вызывает метод <code>currencyOperation</code> метод возвращает объект класса
+     * <code>ApiResponse</code>, в зависимости от результата выполнения по состоянию поля status определяем какой
+     * ResponseEntity вернуть пользователю.
      *
-     * @param userPrincipal
-     * @param sellRequest
-     * @return
-     * @throws IOException
+     * @param userPrincipal авторизированный пользователь в Spring Security Context
+     * @param sellRequest   JSON запрос от клиента на продажу валюты состоит из двух полей.
+     *                      <code>String accountId</code>, <code>BigDecimal sum</code>
+     *                      (счёт списания, сумма списания)
+     * @return возвращает <code>ApiResponse</code> содержащий в себе 2 значение
+     * <code>boolean status</code> - состояние выполненной операции и
+     * <code>String message</code> - текстовое сообщение
+     * о результатах выполненной операции в JSON формате.
      */
     @PostMapping
     @RequestMapping("sold")
     @PreAuthorize("hasRole('CLIENT')")
-    public ResponseEntity<ApiResponse> soldCurrency(
-            @CurrentUser UserPrincipal userPrincipal,
-            @Valid @RequestBody SellCurrencyRequest sellRequest) throws IOException {
-        Optional<PersonalAccount> optionalFrom = accountRepo.findCheckByUniqID(sellRequest.getFromAccountId());
-        Optional<PersonalAccount> optionalTo = accountRepo.findDefaultAccounts(
-                optionalFrom.get().getClient().getId(),
-                currencyRepo.findByName(CurrencyName.RUB).get().getId()
-        );
-        boolean isCorrectAccount = optionalFrom.isPresent() && optionalTo.isPresent() &&
-                !optionalFrom.get().isBlocked() &&
-                userPrincipal.getId().equals(optionalFrom.get().getClient().getUser().getId()) &&
-                optionalTo.get().getCurrency().getName() == CurrencyName.RUB;
+    public ResponseEntity<ApiResponse> soldCurrency(@CurrentUser UserPrincipal userPrincipal,
+                                                    @Valid @RequestBody TradingCurrencyRequest sellRequest) {
+        Optional<Currency> curRuble = currencyRepo.findByName(CurrencyName.RUB);
+        PersonalAccount from;
+        PersonalAccount to;
+        try {
+            //поиск и проверка номера счета.
+            from = accountRepo.findActiveAccountByUUID(sellRequest.getAccountId())
+                    .orElseThrow(() -> new ResourceNotFoundException("PersonalAccount",
+                            sellRequest.getAccountId(),
+                            new ApiResponse(false,
+                                    "Reason exception maybe not correct account number, " +
+                                            "or account may be blocked, you can checked, to account list")));
+
+            //noinspection OptionalGetWithoutIsPresent because curRuble cant be null
+            to = accountRepo.findDefaultAccounts(from.getClient().getId(), curRuble.get().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("PersonalAccount",
+                            "No account with 'defaults' value",
+                            new PersonalAccount()));
+
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+            loggingService.createLog(e.toString(), Status.ERROR);
+            return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
+        }
+        //проверка пользователя на принадлежность к счету отправителя
+        boolean isCorrectAccount = userPrincipal.getId().equals(from.getClient().getUser().getId());
         if (!isCorrectAccount) return new ResponseEntity<>(new ApiResponse(
-                false, "Some account not correct..."), HttpStatus.BAD_REQUEST);
-        ApiResponse apiResponse = accountService.currencyOperation(optionalFrom.get(), optionalTo.get(), sellRequest.getSum());
+                false,
+                String.format("User %s is not the owner of the account %s",
+                        userPrincipal.getUsername(),
+                        from.getUniqCheckId())),
+                HttpStatus.FORBIDDEN);
+
+        ApiResponse apiResponse = accountService.currencyOperation(from, to, sellRequest.getSum());
         if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     /**
-     * todo задокументировать, отрефакторить сделать правильную проверку на корректность операции с нормальными выводами по ситуативным ошибкам
-     * todo сделать красиво в requeste `sum` можно запутаться с тем, что, куда, переводим...
-     * todo проработать исключительные ситуации
+     * <b>Метод доступен только пользователям с Ролью Client</b><br>
+     * POST метод покупки валюты за рубли, со списанием суммы с дефолтного рублевого счёта.
+     * От пользователя приходит json запрос с указанием какую валюту и в каком объеме покупает пользователь.
+     * Выполняется проверка на валидность данной валюты и счетов клиента. Если при проверке отлавливается exception, то
+     * пользователю выкидывается сообщение об ошибке, в случае если все данные были корректны то выполняется метод <code>buyCurrency</code>
      *
-     * @param userPrincipal
-     * @param buyRequest
+     * @param userPrincipal авторизированный пользователь в Spring Security Context
+     * @param buyRequest JSON запрос от клиента на покупку валюты, клиент указывает
+     *                   какую валюту он хочет приобрести и в каком размере
      * @return
      * @throws IOException
      */
     @PostMapping
     @RequestMapping("buy")
     @PreAuthorize("hasRole('CLIENT')")
-    public ResponseEntity<ApiResponse> buyCurrency(
-            @CurrentUser UserPrincipal userPrincipal,
-            @Valid @RequestBody BuyCurrencyRequest buyRequest) throws IOException {
+    public ResponseEntity<ApiResponse> buyCurrency(@CurrentUser UserPrincipal userPrincipal,
+                                                   @Valid @RequestBody BuyCurrencyRequest buyRequest) {
 
-        Optional<PersonalAccount> optionalTo = accountRepo.findCheckByUniqID(buyRequest.getToAccountId());
-        Optional<PersonalAccount> optionalFrom = accountRepo.findDefaultAccounts(
-                optionalTo.get().getClient().getId(),
-                currencyRepo.findByName(CurrencyName.RUB).get().getId()
-        );
-//        boolean isCorrectAccount = optionalFrom.isPresent() && optionalTo.isPresent() &&
-//                optionalFrom.get().isBlocked() && optionalTo.get().isBlocked() &&
-//                userPrincipal.getId().equals(optionalFrom.get().getClient().getUser().getId()) &&
-//                userPrincipal.getId().equals(optionalTo.get().getClient().getUser().getId()) &&
-//                optionalFrom.get().getCurrency().getName() == CurrencyName.RUB;
-//        if (!isCorrectAccount) return new ResponseEntity<>(new ApiResponse(
-//                false, "Some account not correct..."), HttpStatus.BAD_REQUEST);
-        ApiResponse apiResponse = accountService.currencyOperation(optionalFrom.get(), optionalTo.get(), buyRequest.getSum());
+        //noinspection OptionalGetWithoutIsPresent currency and client neve be to null in this method
+        Currency currencyPay = currencyRepo.findByName(CurrencyName.RUB).get();
+        //noinspection OptionalGetWithoutIsPresent
+        Client client = clientRepo.findByUserId(userPrincipal.getId()).get();
+        Currency currencyBuy;
+        PersonalAccount from;
+        PersonalAccount to;
+        try {
+            currencyBuy = currencyRepo.findByName(buyRequest.getCurrencyName())
+                    .orElseThrow(() -> new VerificationNoEntityException("Currency %s not valid value.",
+                            buyRequest.getCurrencyName().toString()));
+            from = accountRepo.findActiveDefaultAccounts(client.getId(), currencyPay.getId())
+                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s",
+                            currencyPay.getName().toString(), client.getLastName()));
+            to = accountRepo.findActiveDefaultAccounts(client.getId(), currencyBuy.getId())
+                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s",
+                            currencyBuy.getName().toString(), client.getLastName()));
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+            loggingService.createLog(e.toString(), Status.ERROR);
+            return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
+        }
+        ApiResponse apiResponse = accountService.buyCurrency(from, to, buyRequest.getSum());
         if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 }

@@ -6,6 +6,9 @@ import org.a2lpo.bank.notownbank.model.accounts.TypeAccountName;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * DTO запрос на создание нового счёта
+ */
 @Data
 public class CreateAccountRequest {
     @NotNull

@@ -79,7 +79,6 @@ public class AccountService {
                         to.toString()),
                         Status.INFO);
             } catch (Exception e) {
-                logger.error("ERROR", e);
                 loggingService.createLog(e.toString(), Status.ERROR);
                 return new ApiResponse(false, String.format("INTERNAL SERVER ERROR. %s", e));
 
@@ -135,15 +134,14 @@ public class AccountService {
         try {
             currencyList = currencyService.getCurrentCurrency();
         } catch (IOException e) {
-            logger.error("ERROR", e);
             loggingService.createLog(e.toString(), Status.ERROR);
             return new ApiResponse(false,
                     String.format("Get currency curse not possible. INTERNAL SERVER ERROR. %s", e));
         }
-        CurrentCurseCurrency currencySold = currencyService.getCurrencyCurse(
+        CurrentCurseCurrency currencySold = currencyService.getCurse(
                 currencyList, from.getCurrency().getName()
         );
-        CurrentCurseCurrency currencyBuy = currencyService.getCurrencyCurse(
+        CurrentCurseCurrency currencyBuy = currencyService.getCurse(
                 currencyList, to.getCurrency().getName()
         );
         Optional<BankAccount> optionalBankAccount = bankAccountRepo // номер банковского счёта на который будет зачисляться комиссия.
@@ -189,6 +187,30 @@ public class AccountService {
         }
         return new ApiResponse(false,
                 "Internal Server Error. Make sure that the payment account has a sufficient amount.");
+    }
+
+    /**
+     * Метод вычисления соотношения суммы для покупки валюты.
+     * @param from счёт списания денег
+     * @param to  счёт зачисления
+     * @param sum сумма зачисления
+     * @return вызывает метод <code>currencyOperation</code>
+     */
+    public ApiResponse buyCurrency(PersonalAccount from,
+                                   PersonalAccount to,
+                                   BigDecimal sum) {
+        BigDecimal value;
+        try {
+            value = currencyService
+                    .getCurse(currencyService.getCurrentCurrency(),
+                            to.getCurrency().getName()).getValue().multiply(sum);
+        } catch (IOException e) {
+            logger.error("ERROR", e);
+            loggingService.createLog(e.toString(), Status.ERROR);
+            return new ApiResponse(false,
+                    String.format("Get currency curse not possible. INTERNAL SERVER ERROR. %s", e));
+        }
+        return currencyOperation(from,to,value);
     }
 }
 

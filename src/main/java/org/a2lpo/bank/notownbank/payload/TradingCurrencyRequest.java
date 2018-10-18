@@ -7,14 +7,14 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * <b>DTO запрос на платеж со счёта accountId на счёт toAccountId сумму sum</b>
+ * DTO продажи валюты
+ * <code>String accountId</code>, счёт списания валюты.
+ * <code>BigDecimal sum</code> сумма списания.
  */
 @Data
-public class PaymentRequest {
+public class TradingCurrencyRequest {
     @NotBlank
-    private String fromAccountId;
-    @NotBlank
-    private String toAccountId;
+    private String accountId;
     @NotNull
     private BigDecimal sum;
 }

@@ -28,18 +28,18 @@ import java.util.Set;
 public class CurrencyService {
     @Value("${app.webpage.currentCurseCurrency}")   //сайт центрбанка
     private String webPage;
-
     /**
      * <b>Метод получения списка валют с сайта центрбанка</b><br>
-     *     <p>Так как в котировках валют с ЦБРФ нет Российского рубля, то предварительно
-     *     в список <code>ArrayList<CurrentCurseCurrency> currencyList</code>, который будет возвращать
-     *     метод, добавляем валюту Российский рубль.</p><br>
-     *     Метод получает c сайта центрбанка котировки валют на текущий день
-     *     в формате JSON, далее парсингом из json получаем объект JsonObject.
-     *     Далее получаем из JsonObject коллекцию <code>Set<Map.Entry<String, JsonElement>> entries</code>
-     *     И по коллекции <code>entries</code> пробегаясь циклом for
-     *     проходит десериализация <code>CurrentCurseCurrency</code>, полученый объект
-     *     помещаем в список <code>ArrayList<CurrentCurseCurrency> currencyList</code>)
+     * <p>Так как в котировках валют с ЦБРФ нет Российского рубля, то предварительно
+     * в список <code>ArrayList<CurrentCurseCurrency> currencyList</code>, который будет возвращать
+     * метод, добавляем валюту Российский рубль.</p><br>
+     * Метод получает c сайта центрбанка котировки валют на текущий день
+     * в формате JSON, далее парсингом из json получаем объект JsonObject.
+     * Далее получаем из JsonObject коллекцию <code>Set<Map.Entry<String, JsonElement>> entries</code>
+     * И по коллекции <code>entries</code> пробегаясь циклом for
+     * проходит десериализация <code>CurrentCurseCurrency</code>, полученый объект
+     * помещаем в список <code>ArrayList<CurrentCurseCurrency> currencyList</code>)
+     *
      * @return currencyList возвращаемый список содержащий объекты валют.
      * @throws IOException пробрасываемый на уровень вверх IOException
      */
@@ -54,7 +54,7 @@ public class CurrencyService {
         Gson gson = new Gson();
         JsonParser parser = new JsonParser();
         try (InputStream is = new URL(webPage).openStream();
-            Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+             Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
             JsonElement parse = parser.parse(reader);
             JsonObject jObj = (JsonObject) parse.getAsJsonObject().get("Valute");
             Set<Map.Entry<String, JsonElement>> entries = jObj.entrySet();
@@ -70,14 +70,15 @@ public class CurrencyService {
 
     /**
      * <b>Метод получения запрашиваемой котировки валюты из списка валют</b><br>
-     *     Итерацией находим запрашиваемую валюту в списке и возвращаем её на уровень выше.
+     * Итерацией находим запрашиваемую валюту в списке и возвращаем её на уровень выше.
+     *
      * @param currencyList список валют, полученый из ЦБ и десерелизован в список объектов
      *                     <code>CurrentCurseCurrency</code>
-     * @param name валюта которую мы ищем в списке.
+     * @param name         валюта которую мы ищем в списке.
      * @return возвращаемый объект класса <code>CurrentCurseCurrency</code>
      */
-    public CurrentCurseCurrency getCurrencyCurse(List<CurrentCurseCurrency> currencyList, CurrencyName name) {
-        return  Iterables.tryFind(currencyList,
+    public CurrentCurseCurrency getCurse(List<CurrentCurseCurrency> currencyList, CurrencyName name) {
+        return Iterables.tryFind(currencyList,
                 currency -> name.toString().equals(currency.getCharCode())).or(new CurrentCurseCurrency());
     }
 }

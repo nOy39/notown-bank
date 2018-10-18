@@ -40,6 +40,9 @@ public class PersonalAccount extends UserDateAudit {
     @JoinColumn(name = "type_id")
     private TypeAccount typeAccount;
 
+    public PersonalAccount() {
+    }
+
     public PersonalAccount(@NotNull Client client,
                            Currency currency,
                            TypeAccount typeAccount) {
