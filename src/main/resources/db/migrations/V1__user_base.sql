@@ -1,3 +1,4 @@
+-- todo сделать таблицы миграции.
 create table manager (
   id            int8         not null,
   created_at    timestamp    not null,

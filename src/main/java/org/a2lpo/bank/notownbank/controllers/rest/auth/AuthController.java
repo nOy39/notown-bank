@@ -52,7 +52,11 @@ public class AuthController {
         this.roleService = roleService;
     }
 
-
+    /**
+     * Краткая информация об авторизированном клиенте
+     * @param currentUser
+     * @return
+     */
     @GetMapping("/me")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse detailsUser(@CurrentUser UserPrincipal currentUser) {
@@ -67,7 +71,11 @@ public class AuthController {
                                 .collect(Collectors.toList())));
     }
 
-
+    /**
+     * Метод авторизации пользователя
+     * @param loginRequest
+     * @return
+     */
     @PostMapping("/signin")
     public ResponseEntity<JwtAuthenticationResponse> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest) {
@@ -84,6 +92,11 @@ public class AuthController {
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, (UserPrincipal) authentication.getPrincipal()));
     }
 
+    /**
+     * Регистрация
+     * @param signUpRequest
+     * @return
+     */
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
         if (userRepo.existsByUsername(signUpRequest.getUsername())) {

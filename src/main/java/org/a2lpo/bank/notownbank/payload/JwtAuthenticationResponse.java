@@ -1,11 +1,9 @@
 package org.a2lpo.bank.notownbank.payload;
 
-import org.a2lpo.bank.notownbank.model.Role;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * DTO Авторизации
@@ -22,6 +20,7 @@ public class JwtAuthenticationResponse {
         this.username = principal.getUsername();
         this.email = principal.getEmail();
         this.roles = principal.getAuthorities();
+
     }
 
     public String getUsername() {
