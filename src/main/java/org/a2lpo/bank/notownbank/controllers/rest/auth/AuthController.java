@@ -38,7 +38,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final RoleService roleService;
-    
+
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepo userRepo,
@@ -81,7 +81,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, (UserPrincipal) authentication.getPrincipal()));
     }
 
     @PostMapping("/signup")
