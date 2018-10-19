@@ -7,5 +7,7 @@
 <body>
 <h3>**codeName** Bank</h3>
 <!--Someday Evan Yu will drop in here and make a front, but he still doesn’t know about it.-->
+<div id="app"></div>
+<script th:src="${isDevMode} ? 'http://localhost:8000/main.js' : '/js/main.js'"></script>
 </body>
 </html>
