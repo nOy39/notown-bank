@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from 'pages/App.vue'
-import store from 'store'
-import router from 'vue-router'
+import store from 'index'
+import router from './pages/router'
 
 new Vue({
     el: '#app',

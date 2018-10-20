@@ -8,6 +8,10 @@
         <button type="button" @click="getTest">Test</button>
         <hr>
         <h2>{{test}}</h2>
+        <hr>
+        <router-link to="/test">test</router-link>
+        <hr>
+        <router-view></router-view>
     </div>
 </template>
 
@@ -29,13 +33,13 @@
             getTest() {
                 AXIOS.get('/test')
                     .then(response => {
-                        this.store.dispatch('setTest', response.data)
+                        this.$store.dispatch('setTest', response.data)
                     })
             }
         },
         computed: {
             test() {
-                return this.store.getters.getTest
+                return this.$store.getters.getTest
             }
         }
     }
