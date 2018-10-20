@@ -4,7 +4,7 @@
         <input type="text" v-model="usernameOrEmail"/>
         <input type="password" v-model="password"/>
         <hr>
-        <button type="button" @click="auth(usernameOrEmail, password)">Save</button>
+        <button type="button" @click="auth">Save</button>
         <button type="button" @click="getTest">Test</button>
         <hr>
         <h2>{{test}}</h2>
@@ -27,8 +27,21 @@
             }
         },
         methods: {
-            auth(us, pass) {
-
+            auth() {
+                AXIOS({
+                    method: 'post',
+                    url: '/auth/signin',
+                    data: {
+                        usernameOrEmail: this.usernameOrEmail,
+                        password: this.password
+                    }
+                })
+                    .then(response => {
+                        this.$store.dispatch('setUser', response.data)
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
             },
             getTest() {
                 AXIOS.get('/test')
