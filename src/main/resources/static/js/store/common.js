@@ -1,7 +1,8 @@
 export default {
     state: {
         test: '',
-        error: ''
+        error: '',
+        loading: false
     },
     mutations: {
         SET_TEST(state, payload) {
@@ -9,6 +10,9 @@ export default {
         },
         SET_ERROR(state, payload) {
             state.error = payload
+        },
+        IS_LOADING(state, payload) {
+            state.loading = payload
         }
     },
     getters: {
@@ -17,6 +21,9 @@ export default {
         },
         getError(state) {
             return state.error
+        },
+        getLoading(state) {
+            return state.loading
         }
     },
     actions: {
@@ -25,6 +32,9 @@ export default {
         },
         setError({commit}, payload) {
             commit('SET_ERROR', payload)
+        },
+        isLoading({commit}, payload) {
+            commit('IS_LOADING', payload)
         }
     }
 }

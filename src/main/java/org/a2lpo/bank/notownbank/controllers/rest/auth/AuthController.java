@@ -1,8 +1,12 @@
 package org.a2lpo.bank.notownbank.controllers.rest.auth;
 
+import org.a2lpo.bank.notownbank.model.Client;
+import org.a2lpo.bank.notownbank.model.Manager;
 import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.a2lpo.bank.notownbank.payload.*;
+import org.a2lpo.bank.notownbank.repos.ClientRepo;
+import org.a2lpo.bank.notownbank.repos.ManagerRepo;
 import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.JwtTokenProvider;
@@ -26,6 +30,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -38,22 +43,29 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final RoleService roleService;
+    private final ClientRepo clientRepo;
+    private final ManagerRepo managerRepo;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepo userRepo,
                           PasswordEncoder passwordEncoder,
                           JwtTokenProvider tokenProvider,
-                          RoleService roleService) {
+                          RoleService roleService,
+                          ClientRepo clientRepo,
+                          ManagerRepo managerRepo) {
         this.authenticationManager = authenticationManager;
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.roleService = roleService;
+        this.clientRepo = clientRepo;
+        this.managerRepo = managerRepo;
     }
 
     /**
      * Краткая информация об авторизированном клиенте
+     *
      * @param currentUser
      * @return
      */
@@ -73,11 +85,12 @@ public class AuthController {
 
     /**
      * Метод авторизации пользователя
+     *
      * @param loginRequest
      * @return
      */
     @PostMapping("/signin")
-    public ResponseEntity<JwtAuthenticationResponse> authenticateUser(
+    public ResponseEntity<?> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -87,13 +100,24 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, (UserPrincipal) authentication.getPrincipal()));
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        Optional<Client> optionalClientByUserId = clientRepo.findByUserId(userPrincipal.getId());
+        if (optionalClientByUserId.isPresent()) {
+            return ResponseEntity.ok(new AuthenticationClientResponse(jwt,
+                    RoleName.ROLE_CLIENT,
+                    optionalClientByUserId.get()));
+        }
+        Optional<Manager> optionalManagerByUserId = managerRepo.findByUser_Id(userPrincipal.getId());
+        return optionalManagerByUserId.<ResponseEntity<?>>map(manager -> ResponseEntity.ok(new AuthenticationManagerResponse(jwt,
+                RoleName.ROLE_MANAGER,
+                manager) {
+        })).orElseGet(() -> ResponseEntity.ok(new JwtAuthenticationResponse(jwt, (UserPrincipal) authentication.getPrincipal())));
     }
 
     /**
      * Регистрация
+     *
      * @param signUpRequest
      * @return
      */
@@ -121,5 +145,27 @@ public class AuthController {
 
         return ResponseEntity.created(location).body(new ApiResponse(true,
                 "User registered successfully"));
+    }
+
+    /**
+     * Возвращает userinfo
+     * @param userPrincipal
+     * @return
+     */
+    @GetMapping("/signin")
+    public ResponseEntity<?> userInfo(@CurrentUser UserPrincipal userPrincipal) {
+        Optional<Client> optionalClient = clientRepo.findByUserId(userPrincipal.getId());
+        Optional<Manager> optionalManager = managerRepo.findByUser_Id(userPrincipal.getId());
+        return optionalClient.<ResponseEntity<?>>map(
+                client -> ResponseEntity.ok(
+                        new AuthenticationClientResponse("",
+                                RoleName.ROLE_CLIENT,
+                                client)))
+                .orElseGet(
+                        () -> ResponseEntity.ok(
+                                new AuthenticationManagerResponse("",
+                                        RoleName.ROLE_MANAGER,
+                                        optionalManager.get()) {
+                                }));
     }
 }
