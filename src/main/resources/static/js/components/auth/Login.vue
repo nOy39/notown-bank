@@ -38,6 +38,12 @@
                     .catch(e => {
                         this.$store.dispatch('setError', e.message)
                     })
+                    .then(()=>{
+                        this.$store.dispatch('isLoading',false)
+                    })
+                    .then(()=>{
+                        this.roleDispatch()
+                    })
             },
             signIn() {
                 AXIOS({
@@ -49,12 +55,16 @@
                     .then(response => {
                         this.$store.dispatch('setAuth', response)
                         console.log(response.data)
-                        this.$router.push('/account')
+                        this.roleDispatch();
                     })
                     .catch(e => {
                         this.$store.dispatch('setError', e.message)
                         console.log(e.message)
                     })
+            },
+            roleDispatch() {
+                let roleUrl = this.$store.getters.getRoles
+                this.$router.push(roleUrl)
             }
         },
         computed:{

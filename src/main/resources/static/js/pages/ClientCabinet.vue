@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2>Account</h2>
+        <h2>Client Account</h2>
         <button type="button" class="btn btn-info" @click="logOut">LogOut</button>
         <hr>
         <button type="button" class="btn btn-outline-primary">Primary</button>
@@ -20,6 +20,7 @@
         methods: {
             logOut() {
                 localStorage.clear()
+                this.$store.dispatch('clearAuth')
                 this.$router.push('/')
             }
         }

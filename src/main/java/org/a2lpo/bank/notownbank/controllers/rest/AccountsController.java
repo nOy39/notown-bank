@@ -133,7 +133,7 @@ public class AccountsController {
             accountRepo.save(personalAccount);
 
             return ResponseEntity.ok(new ApiResponse(true,
-                    String.format("Congratulations, %s you created a new account. Account StatusLog %s, Currency %s, Account Number %s",
+                    String.format("Congratulations, %s you created a new account. ClientCabinet StatusLog %s, Currency %s, ClientCabinet Number %s",
                             personalAccount.getClient().getFirstName(),
                             personalAccount.getTypeAccount().getType().toString(),
                             personalAccount.getCurrency().getName(),
@@ -306,7 +306,7 @@ public class AccountsController {
             //noinspection OptionalGetWithoutIsPresent because curRuble cant be null
             to = accountRepo.findDefaultAccounts(from.getClient().getId(), curRuble.get().getId())
                     .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s %s",
-                            sellRequest.getAccountId(), 
+                            sellRequest.getAccountId(),
                             from.getClient().getLastName()));
 
         } catch (Exception e) {

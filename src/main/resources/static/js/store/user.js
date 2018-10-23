@@ -41,42 +41,22 @@ export default {
         }
     },
     actions: {
-        setUser({commit, state}, login) {
-            commit('SET_ERROR', null)
-            commit('IS_LOADING', true)
-            AXIOS({
-                method: 'post',
-                url: '/auth/signin',
-                data: {
-                    usernameOrEmail: login.usernameOrEmail,
-                    password: login.password
-                }
-            })
-                .then(response => {
-                    commit('SET_USER', response.data)
-                    commit('SET_ROLES', response.data.roles)
-                    commit('SET_AUTH', true)
-                    commit('IS_LOADING', false)
-                    sessionStorage.setItem('token', 'Bearer ' + response.data.accessToken)
-                    localStorage.setItem('token', 'Bearer ' + response.data.accessToken)
-                })
-                .catch(e => {
-                    commit('SET_ERROR', e.message)
-                    commit('IS_LOADING', false)
-                    console.log(e.message.code)
-                })
-        },
         setAuth({commit, state}, payload) {
             commit('SET_DATA', payload)
             commit('SET_USER', payload.data.user)
-            commit('SET_ROLES', payload.data.primaryRole)
             if (payload.data.primaryRole === 'ROLE_MANAGER') {
                 commit('SET_MANAGER', payload.data.manager)
+                commit('SET_ROLES', '/manager')
             } else if (payload.data.primaryRole === 'ROLE_CLIENT') {
                 commit('SET_CLIENT', payload.data.client)
+                commit('SET_ROLES', '/account')
+            } else {
+                commit('SET_ROLES', '/welcome')
             }
             commit('SET_AUTH', true)
-
+        },
+        clearAuth({commit}) {
+            commit('SET_AUTH', false)
         }
     }
 }

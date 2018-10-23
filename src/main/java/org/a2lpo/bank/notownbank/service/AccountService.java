@@ -94,7 +94,7 @@ public class AccountService {
         } else {
             loggingService.createLog(String
                     .format("Data verification error when making a money transfer." +
-                                    " Account transfer from: %s. Account transfer to: %s",
+                                    " ClientCabinet transfer from: %s. ClientCabinet transfer to: %s",
                             from.toString(),
                             to.toString()), Status.WARNING);
             return new ApiResponse(false, "It is not possible to make a transfer. " +

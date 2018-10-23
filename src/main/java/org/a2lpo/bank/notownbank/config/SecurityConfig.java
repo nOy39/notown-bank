@@ -71,6 +71,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .and()
                 .authorizeRequests()
                     .antMatchers("/","/test/**",
+                            "/static/**",
                             "/js/**",
                             "/static/",
                             "/templates/",

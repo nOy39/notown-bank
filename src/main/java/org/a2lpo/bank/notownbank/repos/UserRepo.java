@@ -22,4 +22,6 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     Boolean existsByEmail(String email);
 
+    @Override
+    void delete(User entity);
 }

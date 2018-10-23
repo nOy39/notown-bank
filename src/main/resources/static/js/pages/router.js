@@ -2,7 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Test from 'pages/Test.vue'
 import Main from 'pages/Main.vue'
-import Account from 'pages/PersonAccount.vue'
+import ClientCabinet from 'pages/ClientCabinet.vue'
+import ManagerCabinet from 'pages/ManagerCabinet.vue'
 
 Vue.use(Router)
 
@@ -21,8 +22,13 @@ export default new Router({
         },
         {
             path: '/account',
-            name: 'Account',
-            component: Account
-        }
+            name: 'ClientCabinet',
+            component: ClientCabinet
+        },
+        {
+            path: '/manager',
+            name: 'ManagerCabinet',
+            component: ManagerCabinet
+        },
     ]
 })

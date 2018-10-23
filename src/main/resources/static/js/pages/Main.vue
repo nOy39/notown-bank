@@ -1,10 +1,11 @@
 <template>
+
     <div>
         <div v-if="!isAuth">
             <registration></registration>
             <login></login>
         </div>
-        <div v-else>
+        <div v-else="isAuth">
             <button type="button" @click="signOut">SignOut</button>
         </div>
         <div>
