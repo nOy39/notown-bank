@@ -11,6 +11,7 @@
         <div>
             <button type="button" @click="getTest">Test</button>
             <hr>
+            <h2>Example heading <b-badge>New</b-badge></h2>
             <h2>{{test}}</h2>
             <hr>
             <router-link to="/test">test</router-link>

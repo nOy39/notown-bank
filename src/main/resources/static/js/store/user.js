@@ -38,6 +38,12 @@ export default {
         },
         getRoles(state) {
             return state.roles
+        },
+        getClient(state) {
+            return state.client
+        },
+        getManager(state) {
+            return state.manager
         }
     },
     actions: {
@@ -57,6 +63,8 @@ export default {
         },
         clearAuth({commit}) {
             commit('SET_AUTH', false)
+            commit('SET_CLIENT', false)
+            commit('SET_MANAGER', false)
         }
     }
 }

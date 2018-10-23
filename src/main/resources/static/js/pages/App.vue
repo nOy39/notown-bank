@@ -1,5 +1,6 @@
 <template>
     <div>
+        <navbar></navbar>
         <popup-message v-show="error"></popup-message>
         <loading v-show="loading"></loading>
     <router-view></router-view>
@@ -9,8 +10,9 @@
 <script>
     import PopupMessage from "../components/ui/PopupMessage.vue";
     import Loading from "../components/ui/Loading.vue";
+    import Navbar from "../components/ui/Navbar.vue";
     export default {
-        components: {Loading, PopupMessage},
+        components: {Navbar, Loading, PopupMessage},
         computed: {
             error() {
                 return this.$store.getters.getError
