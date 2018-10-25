@@ -4,6 +4,7 @@ import org.a2lpo.bank.notownbank.exceptions.NoEntityException;
 import org.a2lpo.bank.notownbank.exceptions.ResourceNotFoundException;
 import org.a2lpo.bank.notownbank.exceptions.VerificationNoEntityException;
 import org.a2lpo.bank.notownbank.model.Client;
+import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.accounts.Currency;
 import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
 import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
@@ -36,6 +37,7 @@ import java.util.Optional;
  * Рест контроллер для работы с персональными счетами клиентов
  */
 @RestController
+@PreAuthorize("hasRole('CLIENT')")
 @RequestMapping("/api/account")
 public class AccountsController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -89,6 +91,37 @@ public class AccountsController {
     }
 
     /**
+     * @param userPrincipal
+     * @return
+     */
+    @GetMapping
+    @RequestMapping("{UUID}")
+    public ResponseEntity<?> getAccountInfo(@CurrentUser UserPrincipal userPrincipal,
+                                            @PathVariable("UUID") String uuid) {
+        PersonalAccount personalAccount;
+        try {
+            personalAccount = accountRepo.findAccountByUUID(uuid).orElseThrow(
+                    () -> new VerificationNoEntityException("Account %s not found.", uuid)
+            );
+        } catch (VerificationNoEntityException e) {
+            return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+        boolean verificationUser = personalAccount
+                .getClient()
+                .getUser()
+                .getId()
+                .equals(userPrincipal.getId());
+        if (verificationUser) {
+            return ResponseEntity.ok(new AccountInfoResponse(personalAccount));
+        }
+        return new ResponseEntity<>(new ApiResponse(
+                false,
+                String.format("User %s not master account %s.", userPrincipal.getUsername(), uuid)),
+                HttpStatus.BAD_REQUEST);
+    }
+
+
+    /**
      * <b>Метод доступен только пользователям с Ролью Client</b>
      * POST-метод создания нового счета.
      * Предварительно, перед созданием счета выполняются следующие проверки.
@@ -133,7 +166,7 @@ public class AccountsController {
             accountRepo.save(personalAccount);
 
             return ResponseEntity.ok(new ApiResponse(true,
-                    String.format("Congratulations, %s you created a new account. Account StatusLog %s, Currency %s, Account Number %s",
+                    String.format("Congratulations, %s you created a new account. ClientCabinet StatusLog %s, Currency %s, ClientCabinet Number %s",
                             personalAccount.getClient().getFirstName(),
                             personalAccount.getTypeAccount().getType().toString(),
                             personalAccount.getCurrency().getName(),
@@ -251,7 +284,7 @@ public class AccountsController {
 
         //проверка является ли пользователь хозяином счётов.
         boolean isMasterAccount = from.getClient().getUser().getId().equals(userPrincipal.getId()) &&
-                to.getClient().getId().equals(userPrincipal.getId());
+                to.getClient().getUser().getId().equals(userPrincipal.getId());
         if (!isMasterAccount) return new ResponseEntity<>(new ApiResponse(
                 false, String.format("User %s is not the owner of the account %s",
                 userPrincipal.getUsername(),
@@ -306,7 +339,7 @@ public class AccountsController {
             //noinspection OptionalGetWithoutIsPresent because curRuble cant be null
             to = accountRepo.findDefaultAccounts(from.getClient().getId(), curRuble.get().getId())
                     .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s %s",
-                            sellRequest.getAccountId(), 
+                            sellRequest.getAccountId(),
                             from.getClient().getLastName()));
 
         } catch (Exception e) {
@@ -336,8 +369,8 @@ public class AccountsController {
      * пользователю выкидывается сообщение об ошибке, в случае если все данные были корректны то выполняется метод <code>buyCurrency</code>
      *
      * @param userPrincipal авторизированный пользователь в Spring Security Context
-     * @param buyRequest JSON запрос от клиента на покупку валюты, клиент указывает
-     *                   какую валюту он хочет приобрести и в каком размере
+     * @param buyRequest    JSON запрос от клиента на покупку валюты, клиент указывает
+     *                      какую валюту он хочет приобрести и в каком размере
      * @return
      * @throws IOException
      */

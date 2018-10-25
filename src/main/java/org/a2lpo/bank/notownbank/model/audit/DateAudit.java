@@ -17,7 +17,8 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(
         value = {"createdAt", "updatetAt"},
-        allowGetters = true
+        allowGetters = true,
+        allowSetters = true
 )
 @Data
 public abstract class DateAudit implements Serializable {

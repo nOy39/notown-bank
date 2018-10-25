@@ -1,5 +1,6 @@
 package org.a2lpo.bank.notownbank.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
@@ -43,6 +44,7 @@ public class Client extends UserDateAudit {
     private String email;
     private boolean isActive;
     private LocalDate dateOfBirth;
+    @JsonIgnore
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")

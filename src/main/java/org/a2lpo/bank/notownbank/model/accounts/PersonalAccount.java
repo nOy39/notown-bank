@@ -1,5 +1,6 @@
 package org.a2lpo.bank.notownbank.model.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.a2lpo.bank.notownbank.model.Client;
 import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
@@ -27,8 +28,10 @@ public class PersonalAccount extends UserDateAudit {
     private BigDecimal sum;
     @NotNull
     private String uniqCheckId;
+    @JsonIgnore
     private boolean isBlocked;
     private boolean isDefault;
+    @JsonIgnore
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "client_id")
@@ -36,6 +39,7 @@ public class PersonalAccount extends UserDateAudit {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "currency_id")
     private Currency currency;
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "type_id")
     private TypeAccount typeAccount;
