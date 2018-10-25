@@ -9,5 +9,5 @@ public class MainController {
     @RequestMapping(path = "/", method = RequestMethod.GET)
     public String main() {
         return "main";
-    }
+    }git
 }
