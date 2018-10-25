@@ -5,6 +5,7 @@ import org.a2lpo.bank.notownbank.model.Manager;
 import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.a2lpo.bank.notownbank.payload.*;
+import org.a2lpo.bank.notownbank.repos.AccountRepo;
 import org.a2lpo.bank.notownbank.repos.ClientRepo;
 import org.a2lpo.bank.notownbank.repos.ManagerRepo;
 import org.a2lpo.bank.notownbank.repos.UserRepo;
@@ -45,6 +46,7 @@ public class AuthController {
     private final RoleService roleService;
     private final ClientRepo clientRepo;
     private final ManagerRepo managerRepo;
+    private final AccountRepo accountRepo;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
@@ -53,7 +55,8 @@ public class AuthController {
                           JwtTokenProvider tokenProvider,
                           RoleService roleService,
                           ClientRepo clientRepo,
-                          ManagerRepo managerRepo) {
+                          ManagerRepo managerRepo,
+                          AccountRepo accountRepo) {
         this.authenticationManager = authenticationManager;
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
@@ -61,6 +64,7 @@ public class AuthController {
         this.roleService = roleService;
         this.clientRepo = clientRepo;
         this.managerRepo = managerRepo;
+        this.accountRepo = accountRepo;
     }
 
     /**
@@ -98,7 +102,6 @@ public class AuthController {
                         loginRequest.getPassword()
                 )
         );
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.generateToken(authentication);
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -106,7 +109,8 @@ public class AuthController {
         if (optionalClientByUserId.isPresent()) {
             return ResponseEntity.ok(new AuthenticationClientResponse(jwt,
                     RoleName.ROLE_CLIENT,
-                    optionalClientByUserId.get()));
+                    optionalClientByUserId.get(),
+                    accountRepo.findAllByClient_User_Id(userPrincipal.getId())));
         }
         Optional<Manager> optionalManagerByUserId = managerRepo.findByUser_Id(userPrincipal.getId());
         return optionalManagerByUserId.<ResponseEntity<?>>map(manager -> ResponseEntity.ok(new AuthenticationManagerResponse(jwt,
@@ -160,7 +164,7 @@ public class AuthController {
                 client -> ResponseEntity.ok(
                         new AuthenticationClientResponse("",
                                 RoleName.ROLE_CLIENT,
-                                client)))
+                                client, accountRepo.findAllByClient_User_Id(userPrincipal.getId()))))
                 .orElseGet(
                         () -> ResponseEntity.ok(
                                 new AuthenticationManagerResponse("",

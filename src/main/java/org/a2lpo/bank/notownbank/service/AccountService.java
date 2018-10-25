@@ -69,11 +69,11 @@ public class AccountService {
                 from.getSum().doubleValue() >= sum.doubleValue();
         if (verifyPayment) {
             try {
-                from.setSum(from.getSum().subtract(sum, mc));
-                to.setSum(to.getSum().add(sum, mc));
+                from.setSum(from.getSum().subtract(sum));
+                to.setSum(to.getSum().add(sum));
                 accountRepo.save(from);
                 accountRepo.save(to);
-                historyService.saveCurrentTransfer(from, to, sum, BigDecimal.valueOf(0.00));
+                historyService.saveCurrentTransfer(from, to, sum, sum);
                 loggingService.createLog(String.format("The transfer from: %s to %s was successfully.",
                         from.toString(),
                         to.toString()),
@@ -169,13 +169,14 @@ public class AccountService {
                 accountRepo.save(from);
                 accountRepo.save(to);
                 bankAccountRepo.save(bankAccount);
+                historyService.saveCurrentTransfer(from, to, sumToSold, sumToAccount);
             } catch (Exception e) {
                 logger.error("ERROR", e);
                 loggingService.createLog(e.toString(), Status.ERROR);
                 return new ApiResponse(false,
                         String.format("INTERNAL SERVER ERROR. %s", e));
             }
-            historyService.saveCurrencyOperation(from, to, sumToSold, sumToAccount, bankCommission);
+
             loggingService.createLog("Currency operation",Status.INFO);
             return new ApiResponse(true,
                     String.format("Currency operation successful. " +

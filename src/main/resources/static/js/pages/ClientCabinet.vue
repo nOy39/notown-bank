@@ -3,25 +3,53 @@
         <h2>Client Account</h2>
         <button type="button" class="btn btn-info" @click="logOut">LogOut</button>
         <hr>
-        <button type="button" class="btn btn-outline-primary">Primary</button>
-        <button type="button" class="btn btn-outline-secondary">Secondary</button>
-        <button type="button" class="btn btn-outline-success">Success</button>
-        <button type="button" class="btn btn-outline-danger">Danger</button>
-        <button type="button" class="btn btn-outline-warning">Warning</button>
-        <button type="button" class="btn btn-outline-info">Info</button>
-        <button type="button" class="btn btn-outline-light">Light</button>
-        <button type="button" class="btn btn-outline-dark">Dark</button>
+        <router-link to="/">main</router-link>
     </div>
 </template>
 
 <script>
+    import {AXIOS} from "../http-common";
+
     export default {
         name: "PersonCabinet",
+        data() {
+            return {
+                userInfo: ''
+            }
+        },
         methods: {
             logOut() {
-                localStorage.clear()
+                sessionStorage.clear()
                 this.$store.dispatch('clearAuth')
-                this.$router.push('/')
+                    .then(() =>{
+                        this.$router.push('/')
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
+            },
+            meInfo() {
+                AXIOS({
+                    method: 'get',
+                    url: '/authMe',
+                    headers: {
+                        'Authorization': sessionStorage.getItem('auth')
+                    }
+                })
+                    .then(response => {
+                        this.userInfo = response.data
+                    })
+                    .catch(e => {
+                        console.log(e.message)
+                    })
+            }
+        },
+        computed: {
+            currentAcc() {
+                return this.$store.getters.getAccounts
+            },
+            date() {
+                return this.currentAcc
             }
         }
     }

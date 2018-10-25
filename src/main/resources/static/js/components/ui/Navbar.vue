@@ -31,11 +31,23 @@
                         <b-dropdown-item href="#">Signout</b-dropdown-item>
                     </b-nav-item-dropdown>
                     <template v-if="auth">
-                        <b-nav-item-dropdown text="Accounts" right v-if="client">
-                            <b-dropdown-item href="#">EN</b-dropdown-item>
-                            <b-dropdown-item href="#">ES</b-dropdown-item>
-                            <b-dropdown-item href="#">RU</b-dropdown-item>
-                            <b-dropdown-item href="#">FA</b-dropdown-item>
+                        <b-nav-item-dropdown
+                                text="Accounts"
+                                right
+                                v-if="client">
+                            <b-dropdown-item v-for="item in accounts"
+                                             :key="item.uniqCheckId">
+                                <b-button variant="secondary" @click="push(item.uniqCheckId)">
+                                    {{item.uniqCheckId.substring(0,8) + '...'}}
+                                    <em>({{item.currency.name}})</em>
+                                    <template v-if="item.default">
+                                    <b-badge variant="primary">{{item.sum}}</b-badge>
+                                    </template>
+                                    <template v-else>
+                                        <b-badge variant="light">{{item.sum}}</b-badge>
+                                    </template>
+                                </b-button>
+                            </b-dropdown-item>
                         </b-nav-item-dropdown>
                         <b-nav-item-dropdown text="Message" right>
                             <b-dropdown-item href="#" disabled>Unread</b-dropdown-item>
@@ -83,7 +95,7 @@
         data() {
             return {
                 usernameOrEmail: '',
-                password: ''
+                password: '',
             }
         },
         computed: {
@@ -98,14 +110,26 @@
             },
             manager() {
                 return this.$store.getters.getManager
+            },
+            accounts() {
+                return this.$store.getters.getAccounts
             }
         },
         methods: {
             logOut() {
                 localStorage.clear()
                 this.$store.dispatch('clearAuth')
-                this.$router.push('/')
+                    .then(()=>{
+                        this.$store.dispatch('clearAccounts')
+                            .then(()=>{
+                                this.$router.push('/')
+                            })
+                    })
+
             },
+            /**
+             * Метод логирования.
+             */
             logIn() {
                 this.$store.dispatch('isLoading', true)
                 AXIOS({
@@ -118,7 +142,7 @@
                 })
                     .then(response => {
                         this.$store.dispatch('setAuth', response)
-                        localStorage.setItem('auth', 'Bearer ' + response.data.accessToken)
+                        sessionStorage.setItem('auth', 'Bearer ' + response.data.accessToken)
                         this.$router.push('/account')
                     })
                     .catch(e => {
@@ -128,12 +152,15 @@
                         this.$store.dispatch('isLoading', false)
                     })
                     .then(() => {
-                        this.roleDispatch()
+                        // this.roleDispatch()
                     })
             },
             clear() {
                 this.usernameOrEmail = ''
                 this.password = ''
+            },
+            push(id) {
+                this.$router.push('/account/'+id)
             }
         }
     }

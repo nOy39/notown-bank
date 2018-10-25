@@ -1,5 +1,6 @@
 package org.a2lpo.bank.notownbank.model.accounts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.hibernate.annotations.NaturalId;
@@ -16,6 +17,7 @@ import java.io.Serializable;
 public class Currency implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
     @Enumerated(EnumType.STRING)

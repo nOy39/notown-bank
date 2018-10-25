@@ -16,4 +16,9 @@ public class MainController {
         model.addAttribute("isDevMode", "dev".equals(profile));
         return "main";
     }
+
+    @RequestMapping(value = "/{[path:[^\\.]*}")
+    public String redirect() {
+        return "forward:/";
+    }
 }

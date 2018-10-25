@@ -15,7 +15,9 @@
             <h2>{{test}}</h2>
             <hr>
             <router-link to="/test">test</router-link>
+            <router-link to="/account">account</router-link>
             <hr>
+            <span>{{moment("2018-10-21T07:29:01.471").format('LLL')}}</span>
         </div>
     </div>
 </template>
@@ -35,7 +37,8 @@
                 login: {
                     usernameOrEmail: '',
                     password: ''
-                }
+                },
+                date: Date.now()
             }
         },
         methods: {

@@ -1,5 +1,6 @@
 package org.a2lpo.bank.notownbank.model.audit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
@@ -11,7 +12,7 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 @JsonIgnoreProperties(
         value = {"createdBy", "updatedBy"},
-        allowGetters = true
+        allowSetters = true
 )
 @Data
 public abstract class UserDateAudit extends DateAudit {

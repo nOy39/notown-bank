@@ -2,6 +2,9 @@ package org.a2lpo.bank.notownbank.controllers.rest;
 
 import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.audit.RoleName;
+import org.a2lpo.bank.notownbank.model.message.logging.History;
+import org.a2lpo.bank.notownbank.payload.HistoryRequest;
+import org.a2lpo.bank.notownbank.repos.HistoryRepo;
 import org.a2lpo.bank.notownbank.repos.UserRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
@@ -13,6 +16,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 public class TestController {
@@ -21,26 +27,18 @@ public class TestController {
     RoleService roleService;
     @Autowired
     UserRepo userRepo;
+    @Autowired
+    HistoryRepo historyRepo;
 
-    @GetMapping(value = "/test")
-    public String test(@AuthenticationPrincipal User user) {
-        User user1 = user;
-        return "Test api request";
-    }
-
-    @GetMapping(value = "/authMe")
+    @GetMapping()
+    @RequestMapping(value = "/authMe")
     public String authMe(@CurrentUser UserPrincipal userPrincipal) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userPrincipal.getUsername() + " is login.";
     }
 
-    @GetMapping(value = "/delete/{id}")
-    public String deleteUser(@PathVariable("id") User user) {
-        try {
-            userRepo.delete(user);
-            return "Done";
-        } catch (Exception e) {
-            return e.toString();
-        }
+    @GetMapping
+    public String noAuthGet() {
+        return "Server worked";
     }
 }
