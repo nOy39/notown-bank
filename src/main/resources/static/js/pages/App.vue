@@ -3,7 +3,7 @@
         <navbar></navbar>
         <popup-message v-show="error"></popup-message>
         <loading v-show="loading"></loading>
-    <router-view></router-view>
+        <router-view></router-view>
     </div>
 </template>
 
@@ -11,8 +11,14 @@
     import PopupMessage from "../components/ui/PopupMessage.vue";
     import Loading from "../components/ui/Loading.vue";
     import Navbar from "../components/ui/Navbar.vue";
+
     export default {
         components: {Navbar, Loading, PopupMessage},
+        data() {
+            return {
+                sDate: ''
+            }
+        },
         computed: {
             error() {
                 return this.$store.getters.getError
@@ -25,5 +31,4 @@
 </script>
 
 <style scoped>
-
 </style>

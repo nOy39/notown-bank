@@ -31,49 +31,29 @@
                     </b-card>
                 </b-tab>
                 <b-tab no-body title="History Operation">
-
+                    <account-tab></account-tab>
                 </b-tab>
                 <b-tab no-body title="History transaction">
                     <b-list-group>
                         <b-list-group-item>
-
+                            History all transaction by current month
                         </b-list-group-item>
-                        <b-list-group-item>Dapibus ac facilisis in</b-list-group-item>
-                        <b-list-group-item><table class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Date transaction</th>
-                                <th scope="col">Sum transaction</th>
-                                <th scope="col">Client transaction</th>
-                                <th scope="col">Account transaction</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="item in history" :key="item.id">
-                                <th scope="row">{{item.id}}</th>
-                                <td>{{moment(item.createdAt).format('lll')}}</td>
-                                <td :style="styleTr(item.incomingSum, item.outgoingSum)">
-                                    <i :class="item.incomingSum > item.outgoingSum ? 'fas fa-sort-up' : 'fas fa-sort-down'"></i>
-                                    <em>{{item.incomingSum > item.outgoingSum ? item.incomingSum : item.outgoingSum}}</em>
-                                </td>
-                                <td>
-                                    <em>{{item.transactionClient.firstName + ' ' + item.transactionClient.lastName
-                                        .substring(0,1).toUpperCase() + "."}}</em>
-                                </td>
-                                <td>
-                                    <em>{{item.transactionAccount.uniqCheckId}}</em>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table></b-list-group-item>
+                        <b-list-group-item>
+                            <HistoryTable
+                                    :history="history"
+                                    :gridColumns="gridColumns"></HistoryTable>
+                        </b-list-group-item>
+                        <b-list-group-item>
+                        </b-list-group-item>
                         <b-list-group-item>Porta ac consectetur ac</b-list-group-item>
                         <b-list-group-item>
                         </b-list-group-item>
                     </b-list-group>
                 </b-tab>
-                <b-tab title="Text">
-
+                <b-tab title="Data">
+                    <HistoryTable
+                            :history="history"
+                            :gridColumns="gridColumns"></HistoryTable>
                 </b-tab>
             </b-tabs>
         </b-card>
@@ -82,8 +62,12 @@
 </template>
 
 <script>
+    import HistoryTable from "../components/data/HistoryTable.vue";
+    import AccountTab from "../components/data/AccountTab.vue";
+
     export default {
         name: "Test",
+        components: {AccountTab, HistoryTable},
         data() {
             return {
                 currentAcc: {
@@ -100,167 +84,55 @@
                 },
                 history: [
                     {
-                        createdAt: "2018-10-24T17:08:53.804",
-                        id: 76,
-                        incomingSum: 0,
-                        outgoingSum: 250.5,
-                        transactionAccount: {
-                            blocked: false,
-                            createdAt: "2018-10-16T13:47:32.141",
-                            currency: {
-                                name: "USD"
-                            },
-                            default: true,
-                            id: 39,
-                            sum: 297.6,
-                            uniqCheckId: "38b2a97d-c3ca-4749-876c-088fbb2c6636",
-                            updateBy: 8,
-                            updatedAt: "2018-10-24T17:42:30.889"
-
-                        },
-                        transactionClient: {
-                            active: true,
-                            createdAt: "2018-10-11T13:57:56.155",
-                            dateOfBirth: "2000-10-10",
-                            email: "client@admin.com",
-                            firstName: "Виктор",
-                            id: 11,
-                            lastName: "дробышев",
-                            phone: 9105552211,
-                            updateBy: 8,
-                            updatedAt: "2018-10-11T13:57:56.155"
-                        },
-                    },
-                    {
-                        createdAt: "2018-10-24T17:40:51.622",
-                        id: 90,
-                        incomingSum: 720.77,
+                        transactionDate: "2018-10-24T17:08:53.804",
+                        id: 746,
+                        incomingSum: 2440,
                         outgoingSum: 0,
-                        transactionAccount: {
-                            blocked: false,
-                            createdAt: "2018-10-16T13:47:32.141",
-                            currency: {
-                                name: "USD"
-                            },
-                            default: true,
-                            id: 39,
-                            sum: 297.6,
-                            uniqCheckId: "38b2a97d-c3ca-4749-876c-088fbb2c6636",
-                            updateBy: 8,
-                            updatedAt: "2018-10-24T17:42:30.889"
-
-                        },
-                        transactionClient: {
-                            active: true,
-                            createdAt: "2018-10-11T13:57:56.155",
-                            dateOfBirth: "2000-10-10",
-                            email: "client@admin.com",
-                            firstName: "Виктор",
-                            id: 11,
-                            lastName: "дробышев",
-                            phone: 9105552211,
-                            updateBy: 8,
-                            updatedAt: "2018-10-11T13:57:56.155"
-                        },
+                        transactionAccount: '472673766-d279-4196-9919-67e142cc5ae0',
+                        transactionClient: 'Виктор Д...',
                     },
                     {
-                        createdAt: "2018-10-24T17:27:57.902",
-                        id: 86,
-                        incomingSum: 0,
-                        outgoingSum: 1000.5,
-                        transactionAccount: {
-                            blocked: false,
-                            createdAt: "2018-10-16T13:47:32.141",
-                            currency: {
-                                name: "USD"
-                            },
-                            default: true,
-                            id: 39,
-                            sum: 297.6,
-                            uniqCheckId: "38b2a97d-c3ca-4749-876c-088fbb2c6636",
-                            updateBy: 8,
-                            updatedAt: "2018-10-24T17:42:30.889"
-
-                        },
-                        transactionClient: {
-                            active: true,
-                            createdAt: "2018-10-11T13:57:56.155",
-                            dateOfBirth: "2000-10-10",
-                            email: "client@admin.com",
-                            firstName: "Виктор",
-                            id: 11,
-                            lastName: "дробышев",
-                            phone: 9105552211,
-                            updateBy: 8,
-                            updatedAt: "2018-10-11T13:57:56.155"
-                        }
-
+                        transactionDate: "2018-10-17T17:08:53.804",
+                        id: 76,
+                        incomingSum: 1220,
+                        outgoingSum: 0,
+                        transactionAccount: '72673766-d279-4196-9919-67e142cc5ae0',
+                        transactionClient: 'Виктор Д...',
                     },
                     {
-                        createdAt: "2018-10-24T17:08:53.804",
-                        id: 73,
+                        transactionDate: "2018-10-24T17:09:53.804",
+                        id: 276,
                         incomingSum: 0,
                         outgoingSum: 250.5,
-                        transactionAccount: {
-                            blocked: false,
-                            createdAt: "2018-10-16T13:47:32.141",
-                            currency: {
-                                name: "USD"
-                            },
-                            default: true,
-                            id: 39,
-                            sum: 297.6,
-                            uniqCheckId: "38b2a97d-c3ca-4749-876c-088fbb2c6636",
-                            updateBy: 8,
-                            updatedAt: "2018-10-24T17:42:30.889"
-
-                        },
-                        transactionClient: {
-                            active: true,
-                            createdAt: "2018-10-11T13:57:56.155",
-                            dateOfBirth: "2000-10-10",
-                            email: "client@admin.com",
-                            firstName: "Виктор",
-                            id: 11,
-                            lastName: "дробышев",
-                            phone: 9105552211,
-                            updateBy: 8,
-                            updatedAt: "2018-10-11T13:57:56.155"
-                        }
-                    }
-                ],
-                fields: [
-                    {
-                        key: 'id',
-                        sortable: true
+                        transactionAccount: '72673766-d279-4196-9919-67e142cc5ae0',
+                        transactionClient: 'Виктор Д...',
                     },
                     {
-                        key: 'createdAt',
-                        label: 'Date transaction',
-                        sortable: true
+                        transactionDate: "2018-10-20T17:08:53.804",
+                        id: 176,
+                        incomingSum: 0,
+                        outgoingSum: 4250.5,
+                        transactionAccount: '372673766-d279-4196-9919-67e142cc5ae0',
+                        transactionClient: 'Виктор Д...',
                     },
                     {
-                        key: 'transactionAccount.uniqCheckId',
-                        label: 'Person age',
-                        sortable: true,
-                        // Variant applies to the whole column, including the header and footer
-                        variant: 'danger'
-                    }
+                        transactionDate: "2018-10-18T17:08:53.804",
+                        id: 376,
+                        incomingSum: 0,
+                        outgoingSum: 1250.5,
+                        transactionAccount: '726673766-d279-4196-9919-67e142cc5ae0',
+                        transactionClient: 'Виктор Д...',
+                    },
                 ],
-                cssObject:{
-                    fad: 'fas fa-sort-down',
-                    fau: 'fas fa-sort-up'
-                }
-
+                gridColumns: ['id', 'transactionDate', 'incomingSum', 'outgoingSum', 'transactionAccount', 'transactionClient',],
+                search: ''
             }
         },
         methods: {
             styleTr(inc, out) {
                 if (inc > out) {
-                    this.incomin = true
                     return {color: 'green'}
                 } else {
-                    this.incomin = false
                     return {color: 'red'}
                 }
             }

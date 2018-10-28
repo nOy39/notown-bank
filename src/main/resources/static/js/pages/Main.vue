@@ -1,13 +1,7 @@
 <template>
 
     <div>
-        <div v-if="!isAuth">
-            <registration></registration>
-            <login></login>
-        </div>
-        <div v-else="isAuth">
-            <button type="button" @click="signOut">SignOut</button>
-        </div>
+        <b-button variant="success" @click="currentDate">Current date</b-button>
         <div>
             <button type="button" @click="getTest">Test</button>
             <hr>
@@ -15,6 +9,8 @@
             <h2>{{test}}</h2>
             <hr>
             <router-link to="/test">test</router-link>
+            <router-link to="/test">test</router-link>
+            <router-link to="/account">account</router-link>
             <router-link to="/account">account</router-link>
             <hr>
             <span>{{moment("2018-10-21T07:29:01.471").format('LLL')}}</span>
@@ -38,7 +34,6 @@
                     usernameOrEmail: '',
                     password: ''
                 },
-                date: Date.now()
             }
         },
         methods: {
@@ -48,9 +43,9 @@
                         this.$store.dispatch('setTest', response.data)
                     })
             },
-            signOut() {
-                localStorage.clear()
-                this.$router.push('/')
+            currentDate() {
+                console.log(this.moment().format('YYYY-MM-DDTHH:mm:ss'))
+                console.log(this.firstdayOfMonth)
             }
         },
         computed: {
@@ -59,6 +54,13 @@
             },
             isAuth() {
                 return this.$store.getters.getAuth
+            },
+            date() {
+                return Date.now()
+            },
+            firstdayOfMonth() {
+                let fDate = this.moment().format('YYYY-MM') + '-01T00:00:00'
+                return fDate
             }
         },
         mounted() {
@@ -70,5 +72,4 @@
 </script>
 
 <style scoped>
-
 </style>

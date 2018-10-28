@@ -17,8 +17,8 @@ public class MainController {
         return "main";
     }
 
-    @RequestMapping(value = "/{[path:[^\\.]*}")
-    public String redirect() {
-        return "forward:/";
-    }
+//    @RequestMapping(value = "/{[path:[^\\.]*}")
+//    public String redirect() {
+//        return "forward:/";
+//    }
 }

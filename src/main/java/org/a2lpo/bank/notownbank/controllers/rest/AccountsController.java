@@ -1,10 +1,8 @@
 package org.a2lpo.bank.notownbank.controllers.rest;
 
 import org.a2lpo.bank.notownbank.exceptions.NoEntityException;
-import org.a2lpo.bank.notownbank.exceptions.ResourceNotFoundException;
 import org.a2lpo.bank.notownbank.exceptions.VerificationNoEntityException;
 import org.a2lpo.bank.notownbank.model.Client;
-import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.accounts.Currency;
 import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
 import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
@@ -96,7 +94,7 @@ public class AccountsController {
      */
     @GetMapping
     @RequestMapping("{UUID}")
-    public ResponseEntity<?> getAccountInfo(@CurrentUser UserPrincipal userPrincipal,
+    public ResponseEntity<Object> getAccountInfo(@CurrentUser UserPrincipal userPrincipal,
                                             @PathVariable("UUID") String uuid) {
         PersonalAccount personalAccount;
         try {
@@ -272,7 +270,6 @@ public class AccountsController {
                     .orElseThrow(() -> new VerificationNoEntityException("Not found account or %s is inactive, for client.",
                             changeRequest.getToAccountId()));
         } catch (NoEntityException e) {
-            logger.error("ERROR", e);
             loggingService.createLog(e.toString(), Status.ERROR);
             return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
         }

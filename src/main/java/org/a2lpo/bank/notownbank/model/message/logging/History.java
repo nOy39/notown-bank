@@ -4,22 +4,25 @@ import com.google.common.base.Objects;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
+import org.a2lpo.bank.notownbank.model.audit.DateAudit;
 import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "history")
 @Data
-public class History extends UserDateAudit {
+public class History {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private BigDecimal outgoingSum;
     private BigDecimal incomingSum;
+    private LocalDateTime createdAt;
     @NotNull
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "main_account")
@@ -37,6 +40,7 @@ public class History extends UserDateAudit {
         this.incomingSum = incomingSum;
         this.mainAccount = mainAccount;
         this.secondaryAccount = secondaryAccount;
+        this.createdAt = LocalDateTime.now();
     }
 
     @Override

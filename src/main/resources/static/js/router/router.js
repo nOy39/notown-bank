@@ -13,12 +13,12 @@ export default new Router({
     mode: 'history',
     routes: [
         {
-            path: '/test',
+            path: '/',
             name: 'Test',
             component: Test
         },
         {
-            path: '/',
+            path: '/welcome',
             name: 'Main',
             component: Main
         },

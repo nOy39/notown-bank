@@ -1,7 +1,5 @@
 package org.a2lpo.bank.notownbank.controllers.rest;
 
-import org.a2lpo.bank.notownbank.model.User;
-import org.a2lpo.bank.notownbank.model.audit.RoleName;
 import org.a2lpo.bank.notownbank.model.message.logging.History;
 import org.a2lpo.bank.notownbank.payload.HistoryRequest;
 import org.a2lpo.bank.notownbank.repos.HistoryRepo;
@@ -11,12 +9,9 @@ import org.a2lpo.bank.notownbank.security.UserPrincipal;
 import org.a2lpo.bank.notownbank.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.SpringSecurityCoreVersion;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -40,5 +35,17 @@ public class TestController {
     @GetMapping
     public String noAuthGet() {
         return "Server worked";
+    }
+
+    @PostMapping()
+    @RequestMapping(value = "/period")
+    public List<History> periodHistory(@RequestBody HistoryRequest historyRequest,
+                                          @CurrentUser UserPrincipal userPrincipal) {
+        List<History> accountHistoryByPeriod = historyRepo.findAccountHistoryByPeriod(userPrincipal.getId(),
+                historyRequest.getUniqCheckId(),
+                historyRequest.getFirstDate(),
+                historyRequest.getLastDate());
+
+        return accountHistoryByPeriod;
     }
 }
