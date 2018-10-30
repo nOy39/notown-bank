@@ -54,5 +54,15 @@ public class HistoryController {
                         .map(HistoryListResponse::new)
                         .collect(Collectors.toList()));
     }
+    @GetMapping()
+    @RequestMapping(value = "/last")
+    public ResponseEntity<?> lastTransaction(@CurrentUser UserPrincipal userPrincipal) {
 
+        return ResponseEntity.ok(historyRepo
+                .findLastTenTransaction(userPrincipal.getId(), 5)
+                .stream()
+                .map(HistoryListResponse::new)
+                .collect(Collectors.toList())
+        );
+    }
 }

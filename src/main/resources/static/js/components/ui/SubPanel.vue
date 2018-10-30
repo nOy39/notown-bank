@@ -1,6 +1,5 @@
 <template>
     <div>
-        <p>Sub panel</p>
         <b-card title="Browse" class="mb-2"
                 sub-title="Browse personal accounts data">
             <table align="center">

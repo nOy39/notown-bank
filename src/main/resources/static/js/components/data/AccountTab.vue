@@ -1,5 +1,5 @@
 <template>
-    <div class="my-3">
+    <div class="my-5">
         <div class="account-card">
             <b-card header="Current bank account info"
                     header-tag="header"

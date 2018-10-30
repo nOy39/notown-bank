@@ -39,6 +39,9 @@ export default {
         },
         getManager(state) {
             return state.manager
+        },
+        getToken(state) {
+            return state.token
         }
     },
     actions: {

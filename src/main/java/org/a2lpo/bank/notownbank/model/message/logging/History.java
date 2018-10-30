@@ -1,8 +1,10 @@
 package org.a2lpo.bank.notownbank.model.message.logging;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.a2lpo.bank.notownbank.model.User;
 import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
 import org.a2lpo.bank.notownbank.model.audit.DateAudit;
 import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
@@ -31,6 +33,10 @@ public class History {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "secondary_account")
     private PersonalAccount secondaryAccount;
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public History(@NotNull PersonalAccount mainAccount,
                    @NotNull PersonalAccount secondaryAccount,
@@ -41,6 +47,7 @@ public class History {
         this.mainAccount = mainAccount;
         this.secondaryAccount = secondaryAccount;
         this.createdAt = LocalDateTime.now();
+        this.user = mainAccount.getClient().getUser();
     }
 
     @Override

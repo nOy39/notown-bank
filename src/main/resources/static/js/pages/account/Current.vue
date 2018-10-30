@@ -1,12 +1,11 @@
 <template>
-    <div>
-        <h3>Browse</h3>
+    <div class="my-3">
+        <h3>CurrentAccount</h3>
     </div>
 </template>
 
 <script>
     export default {
-        name: "Browse"
     }
 </script>
 

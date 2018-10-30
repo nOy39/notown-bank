@@ -1,14 +1,15 @@
 <template>
-    <div>
-        <DockPanel/>
+    <div class="my-3">
+        <account-cards/>
     </div>
 </template>
 
 <script>
 
     import DockPanel from "../components/ui/DockPanel.vue";
+    import AccountCards from "../components/ui/AccountCards.vue";
     export default {
-        components: {DockPanel},
+        components: {AccountCards, DockPanel},
         data() {
             return {
 

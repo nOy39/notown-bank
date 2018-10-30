@@ -43,4 +43,8 @@ public interface HistoryRepo extends JpaRepository<History, Long> {
                                                 @Param("uuid") String uuid,
                                                 @Param("firstDate") LocalDateTime firstDate,
                                                 @Param("lastDate") LocalDateTime lastDate);
+
+    @Query(nativeQuery = true,
+    value = "select * from history h where h.user_id = :userId order by created_at desc limit :lmt")
+    List<History> findLastTenTransaction(@Param("userId") Long userId, @Param("lmt") int limit);
 }
