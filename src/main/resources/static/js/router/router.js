@@ -6,6 +6,8 @@ import Main from 'pages/Main.vue'
 import ClientCabinet from 'pages/ClientCabinet.vue'
 import ManagerCabinet from 'pages/ManagerCabinet.vue'
 import Account from 'pages/Account.vue'
+import TestSub from 'pages/TestSub.vue'
+import Browse from 'pages/Browse.vue'
 
 Vue.use(Router)
 
@@ -23,7 +25,7 @@ export default new Router({
             component: Main
         },
         {
-            path: '/account',
+            path: '/browse',
             name: 'ClientCabinet',
             component: ClientCabinet,
             beforeEnter: ClientGuards
@@ -40,5 +42,12 @@ export default new Router({
             component: Account,
             beforeEnter: ClientGuards
         },
+        {
+            path: '/:id',
+            component: TestSub,
+            name: 'TestSub',
+            props: true,
+        }
+
     ]
 })

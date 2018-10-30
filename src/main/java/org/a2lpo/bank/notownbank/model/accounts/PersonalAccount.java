@@ -39,7 +39,6 @@ public class PersonalAccount extends UserDateAudit {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "currency_id")
     private Currency currency;
-    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "type_id")
     private TypeAccount typeAccount;

@@ -1,16 +1,15 @@
 <template>
     <div>
-
         <b-col sm="9">
             <div>
                 <b-form-input v-model="searchKey"
                               type="text"
-                              placeholder="SEARCH(Account ID, sum, date, Name"
+                              placeholder="SEARCH(Account ID, sum, date, Name)"
                               class="my-1">
                 </b-form-input>
 
             </div>
-            <table>
+            <table v-if="!history.message">
                 <thead>
                 <tr>
                     <th v-for="key in gridColumns"
@@ -39,6 +38,11 @@
                 </tr>
                 </tbody>
             </table>
+            <div v-else>
+                <em>
+                    <h5>History for current period empty. If you want later history, you must create detailed request.</h5>
+                </em>
+            </div>
         </b-col>
     </div>
 </template>

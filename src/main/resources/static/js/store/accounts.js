@@ -1,19 +1,19 @@
 export default {
     state: {
-        accounts: '',
+        clientAccounts: '',
         currentAcc: '',
     },
     mutations: {
-        SET_ACCOUNTS(state, payload) {
-            state.accounts = payload
+        SET_CLIENT_ACCOUNTS(state, payload) {
+            state.clientAccounts = payload
         },
         SET_CURRENT_ACC(state, payload) {
             state.currentAcc = payload
         }
     },
     getters: {
-        getAccounts(state) {
-            return state.accounts
+        getClientAccounts(state) {
+            return state.clientAccounts
         },
         getCurrentAcc(state) {
                 return state.currentAcc

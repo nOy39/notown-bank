@@ -3,25 +3,23 @@
         <b-navbar toggleable="md" type="dark" variant="secondary">
 
             <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
-
-            <b-navbar-brand href="#">Pac-Man Bank</b-navbar-brand>
-
+            <b-navbar-brand to="/">Pac-Man Bank</b-navbar-brand>
             <b-collapse is-nav id="nav_collapse">
-
-                <!--<b-navbar-nav>-->
-                <!--<b-nav-item href="/">Link</b-nav-item>-->
-                <!--<b-nav-item href="#" disabled>Disabled</b-nav-item>-->
-                <!--</b-navbar-nav>-->
-
+                <b-navbar-nav v-if="authClient">
+                    <b-nav-item to="/browse">Browse</b-nav-item>
+                    <b-nav-item-dropdown text="Accounts" right>
+                        <b-dropdown-item to="/current">Current</b-dropdown-item>
+                        <b-dropdown-item to="/history">History</b-dropdown-item>
+                    </b-nav-item-dropdown>
+                    <b-nav-item to="/payment">Payment and Transaction</b-nav-item>
+                    <b-nav-item to="/credit">Credit</b-nav-item>
+                    <b-nav-item-dropdown text="Currency" right>
+                        <b-dropdown-item to="/course">Course</b-dropdown-item>
+                        <b-dropdown-item to="/change">Change</b-dropdown-item>
+                    </b-nav-item-dropdown>
+                </b-navbar-nav>
                 <!-- Right aligned nav items -->
                 <b-navbar-nav class="ml-auto">
-
-                    <b-nav-form>
-                        <b-form-input size="sm" class="mr-sm-2" type="text" placeholder="Search"/>
-                        <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
-                    </b-nav-form>
-
-
                     <b-nav-item-dropdown right v-if="auth">
                         <!-- Using button-content slot -->
                         <template slot="button-content">
@@ -35,19 +33,10 @@
                                 text="Accounts"
                                 right
                                 v-if="client">
-                            <b-dropdown-item v-for="item in accounts"
-                                             :key="item.uniqCheckId">
-                                <b-button variant="secondary" @click="push(item.uniqCheckId)">
-                                    {{item.uniqCheckId.substring(0,8) + '...'}}
-                                    <em>({{item.currency.name}})</em>
-                                    <template v-if="item.default">
-                                    <b-badge variant="primary">{{item.sum}}</b-badge>
-                                    </template>
-                                    <template v-else>
-                                        <b-badge variant="light">{{item.sum}}</b-badge>
-                                    </template>
-                                </b-button>
-                            </b-dropdown-item>
+                            <b-button size="sm"
+                                      class="my-2 my-sm-0"
+                                      type="submit">Accounts
+                            </b-button>
                         </b-nav-item-dropdown>
                         <b-nav-item-dropdown text="Message" right>
                             <b-dropdown-item href="#" disabled>Unread</b-dropdown-item>
@@ -58,17 +47,15 @@
                         <b-button size="sm" class="my-2 my-sm-0" type="submit" @click="logOut">Log out</b-button>
                     </template>
                     <template v-else>
-                        <b-button size="sm" class="my-2 my-sm-0" type="submit" @click="logOut">Log in</b-button>
-                        <b-btn v-b-modal.modal-center>Sign in</b-btn>
+                        <b-btn v-b-modal.modal-sign-in>Sign in</b-btn>
+                        <b-btn v-b-modal.modal-sign-up>Sign up</b-btn>
                     </template>
                 </b-navbar-nav>
             </b-collapse>
         </b-navbar>
         <div>
-
-
             <!-- Modal Component -->
-            <b-modal id="modal-center"
+            <b-modal id="modal-sign-in"
                      ref="modal"
                      title="Authorize... "
                      @ok="logIn"
@@ -76,11 +63,18 @@
                 <form @submit.stop.prevent="logIn">
                     <b-form-input type="text"
                                   placeholder="Username or email"
-                                  v-model="usernameOrEmail"></b-form-input>
+                                  v-model="loginForm.usernameOrEmail"></b-form-input>
                     <b-form-input type="password"
                                   placeholder="Password"
-                                  v-model="password" my-3></b-form-input>
+                                  v-model="loginForm.password" my-3></b-form-input>
                 </form>
+            </b-modal>
+            <b-modal id="modal-sign-up"
+                     ref="modal"
+                     title="Sign up... "
+                     @ok="logIn"
+                     @shown="clear">
+                <registration></registration>
             </b-modal>
         </div>
     </div>
@@ -89,13 +83,17 @@
 <script>
 
     import {AXIOS} from "../../http-common";
+    import Registration from "../auth/Registration.vue";
 
     export default {
         name: "Navbar",
+        components: {Registration},
         data() {
             return {
-                usernameOrEmail: '',
-                password: '',
+                loginForm: {
+                    usernameOrEmail: '',
+                    password: ''
+                }
             }
         },
         computed: {
@@ -106,22 +104,25 @@
                 return this.$store.getters.getAuth
             },
             client() {
-                return this.$store.getters.getClient
+                return this.$store.getters.getRoleClient
             },
             manager() {
                 return this.$store.getters.getManager
             },
             accounts() {
-                return this.$store.getters.getAccounts
+                return this.$store.getters.getClientAccounts
+            },
+            authClient() {
+                return this.$store.getters.getClient
             }
         },
         methods: {
             logOut() {
                 localStorage.clear()
                 this.$store.dispatch('clearAuth')
-                    .then(()=>{
+                    .then(() => {
                         this.$store.dispatch('clearAccounts')
-                            .then(()=>{
+                            .then(() => {
                                 this.$router.push('/')
                             })
                     })
@@ -132,38 +133,22 @@
              */
             logIn() {
                 this.$store.dispatch('isLoading', true)
-                AXIOS({
-                    method: 'post',
-                    url: '/auth/signin',
-                    data: {
-                        usernameOrEmail: this.usernameOrEmail,
-                        password: this.password
-                    }
-                })
-                    .then(response => {
-                        this.$store.dispatch('setAuth', response)
-                        sessionStorage.setItem('auth', 'Bearer ' + response.data.accessToken)
-                        this.$router.push('/account')
+                this.$store.dispatch('setAuth', this.loginForm)
+                    .then(() => {
+                        console.log('in block')
                     })
                     .catch(e => {
                         this.$store.dispatch('setError', e.message)
                     })
-                    .then(() => {
-                        this.$store.dispatch('isLoading', false)
-                    })
-                    .then(() => {
-                        // this.roleDispatch()
-                    })
+
             },
             clear() {
                 this.usernameOrEmail = ''
                 this.password = ''
-            },
-            push(id) {
-                this.$router.push('/account/'+id)
             }
         }
     }
+
 </script>
 
 <style scoped>
