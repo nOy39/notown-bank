@@ -66,4 +66,13 @@ public interface AccountRepo extends JpaRepository<PersonalAccount, Long> {
             "and a.is_blocked = false " +
             "limit 1")
     Optional<PersonalAccount> findActiveDefaultAccounts(@Param("clientId")Long clientId, @Param("currency")Long currency);
+
+    @Query(nativeQuery = true,
+    value = "select * from account a " +
+            "left outer join clients c2 " +
+            "on a.client_id = c2.id " +
+            "where c2.user_id = :userId " +
+            "and a.uniq_check_id = :accountNumber")
+    Optional<PersonalAccount> findPersonalAccountByUserIdAndByAccountNumber(@Param("userId")Long userId,
+                                                                            @Param("accountNumber")String accNumber);
 }

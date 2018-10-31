@@ -5,7 +5,7 @@ import Test from 'pages/Test.vue'
 import Main from 'pages/Main.vue'
 import ClientCabinet from 'pages/account/ClientCabinet.vue'
 import ManagerCabinet from 'pages/ManagerCabinet.vue'
-import Account from 'pages/Account.vue'
+import Account from 'pages/account/AccountPage.vue'
 import TestSub from 'pages/TestSub.vue'
 import Current from 'pages/account/Current.vue'
 

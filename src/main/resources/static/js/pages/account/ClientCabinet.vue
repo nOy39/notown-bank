@@ -7,8 +7,8 @@
 </template>
 
 <script>
-    import SubPanel from "../../components/ui/SubPanel.vue";
-    import DockPanel from "../../components/ui/DockPanel.vue";
+    import SubPanel from "../../components/data/SubPanel.vue";
+    import DockPanel from "../../components/data/DockPanel.vue";
     import {AXIOS} from "../../http-common";
 
     export default {

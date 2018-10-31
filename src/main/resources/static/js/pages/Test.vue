@@ -6,8 +6,8 @@
 
 <script>
 
-    import DockPanel from "../components/ui/DockPanel.vue";
-    import AccountCards from "../components/ui/AccountCards.vue";
+    import DockPanel from "../components/data/DockPanel.vue";
+    import AccountCards from "../components/data/AccountCards.vue";
     export default {
         components: {AccountCards, DockPanel},
         data() {

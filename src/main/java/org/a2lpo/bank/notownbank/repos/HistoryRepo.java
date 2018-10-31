@@ -31,11 +31,9 @@ public interface HistoryRepo extends JpaRepository<History, Long> {
      * @return
      */
     @Query(nativeQuery = true,
-            value = "select h.main_account, h.secondary_account, h.incoming_sum, h.outgoing_sum, h.id, h.created_at from  history h " +
-                        "left outer join  account a on h.main_account = a.id " +
-                        "left outer join clients c2 on a.client_id = c2.id " +
-                            "where a.uniq_check_id = :uuid " +
-                            "and c2.user_id = :userId " +
+            value = "select * from  history h " +
+                        "left outer join  account a on h.main_account = a.id  where a.uniq_check_id = :uuid " +
+                            "and h.user_id = :userId " +
                             "and h.created_at > :firstDate " +
                             "and h.created_at < :lastDate " +
                         "order by h.created_at desc")

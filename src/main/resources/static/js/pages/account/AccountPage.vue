@@ -1,46 +1,16 @@
 <!--todo сделать програмное возвращение на предыдущую страницу, сделать историю по счету-->
 <template>
     <div>
-        <b-card no-body>
-            <b-tabs card>
-                <b-tab no-body title="Current account" active>
-                    <account-tab :accountInfo="currentAcc"></account-tab>
-                </b-tab>
-                <b-tab no-body title="History Operation">
-                    <b-list-group>
-                        <b-list-group-item>
-                            History all transaction by current month. <a href="#">Detailed</a> history.
-                        </b-list-group-item>
-                        <b-list-group-item>
-                            <HistoryTable
-                                    :history="history"
-                                    :gridColumns="gridColumns"></HistoryTable>
-                        </b-list-group-item>
-                        <b-list-group-item>
-                        </b-list-group-item>
-                        <b-list-group-item>Porta ac consectetur ac</b-list-group-item>
-                        <b-list-group-item>
-                        </b-list-group-item>
-                    </b-list-group>
-                </b-tab>
-                <b-tab no-body title="History transaction">
-
-                </b-tab>
-                <b-tab title="Data">
-                    <HistoryTable
-                            :history="history"
-                            :gridColumns="gridColumns"></HistoryTable>
-                </b-tab>
-            </b-tabs>
+        <b-card no-body v-if="accountInfo">
+            <account-tab :accountInfo="accountInfo"></account-tab>
         </b-card>
-        <router-link to="/account">account</router-link>
     </div>
 </template>
 
 <script>
-    import {AXIOS} from "../http-common";
-    import HistoryTable from "../components/data/HistoryTable.vue";
-    import AccountTab from "../components/data/AccountTab.vue";
+    import {AXIOS} from "../../http-common";
+    import HistoryTable from "../../components/data/HistoryTable.vue";
+    import AccountTab from "../../components/data/AccountTab.vue";
 
     export default {
         name: "Account",
@@ -55,26 +25,13 @@
             }
         },
         beforeMount() {
-            console.log('bm')
             this.fetchAccountData()
-        },
-        mounted() {
-            console.log('m')
-        },
-        beforeUpdate() {
-            console.log('bu')
-            if (this.currentAcc.uniqCheckId != this.$route.params.id) {
-                this.fetchAccountData()
-            }
-        },
-        updated() {
-            console.log('u')
         },
         computed: {
             acc() {
                 return this.$route.params.id
             },
-            currentAcc() {
+            accountInfo() {
                 return this.$store.getters.getCurrentAcc
             },
             loading() {
@@ -91,19 +48,18 @@
                     method: 'get',
                     url: '/account/' + this.$route.params.id,
                     headers: {
-                        'Authorization': sessionStorage.getItem('auth')
+                        'Authorization': 'Bearer ' + this.$store.getters.getToken
                     }
                 })
                     .then(response => {
                         this.$store.dispatch('setCurrentAcc', response.data)
-                            .then(() => console.log(response))
                     })
                     .then(() => {
                         AXIOS({
                             method: 'post',
                             url: '/logs/period/',
                             headers: {
-                                'Authorization': sessionStorage.getItem('auth')
+                                'Authorization': 'Bearer ' + this.$store.getters.getToken
                             },
                             data: {
                                 uniqCheckId: this.$route.params.id,
@@ -114,31 +70,23 @@
                             .then(response => {
                                 this.$store.dispatch('setHistory', response.data)
                                     .then(() => {
-                                        console.log(this.data)
                                         this.$store.dispatch('isLoading', false)
                                     })
                                     .catch(e => {
                                         this.$store.dispatch('setError', e.message)
+                                        this.$store.dispatch('isLoading', true)
                                     })
                             })
                             .catch(e => {
-                                console.log('history: ' + e)
                                 this.$store.dispatch('setError', e.message)
+                                this.$store.dispatch('isLoading', true)
                             })
                     })
                     .catch(e => {
-                        console.log('console: ' + e)
                         this.$store.dispatch('setError', e.message)
+                        this.$store.dispatch('isLoading', true)
                     })
-            },
-            styleTr(inc, out) {
-                if (inc > out) {
-                    return {color: 'green'}
-                } else {
-                    return {color: 'red'}
-                }
-            },
-            search(){}
+            }
         }
     }
 </script>

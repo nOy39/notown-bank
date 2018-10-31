@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import org.a2lpo.bank.notownbank.model.audit.DateAudit;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.NaturalId;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;

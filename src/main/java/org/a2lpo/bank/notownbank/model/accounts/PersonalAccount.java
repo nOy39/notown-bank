@@ -8,6 +8,7 @@ import org.a2lpo.bank.notownbank.model.audit.UserDateAudit;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -42,9 +43,8 @@ public class PersonalAccount extends UserDateAudit {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "type_id")
     private TypeAccount typeAccount;
-
-    public PersonalAccount() {
-    }
+    @OneToMany(mappedBy = "accountCard", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Card> cards;
 
     public PersonalAccount(@NotNull Client client,
                            Currency currency,
