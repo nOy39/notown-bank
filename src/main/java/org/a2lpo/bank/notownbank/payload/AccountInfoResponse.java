@@ -1,9 +1,8 @@
 package org.a2lpo.bank.notownbank.payload;
 
 import lombok.Data;
-import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
-import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
-import org.a2lpo.bank.notownbank.model.accounts.TypeAccountName;
+import org.a2lpo.bank.notownbank.model.accounts.eav.Currency;
+import org.a2lpo.bank.notownbank.model.accounts.eav.TypeAccount;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,9 +14,9 @@ import java.time.LocalDateTime;
 public class AccountInfoResponse {
     private final BigDecimal sum;
     private final LocalDateTime createdAt;
-    private final TypeAccountName type;
+    private final TypeAccount type;
     private final LocalDateTime updatedAt;
-    private final CurrencyName currency;
+    private final Currency currency;
     private final String uniqCheckId;
     private final boolean isDefault;
     private final boolean isBlocked;
@@ -26,8 +25,8 @@ public class AccountInfoResponse {
 
     public AccountInfoResponse(String uniqCheckId,
                                BigDecimal sum,
-                               CurrencyName currency,
-                               TypeAccountName type,
+                               Currency currency,
+                               TypeAccount type,
                                LocalDateTime createdAt,
                                LocalDateTime updatedAt,
                                Long createdBy,
@@ -46,16 +45,16 @@ public class AccountInfoResponse {
         this.updatedBy = updatedBy;
     }
 
-    public AccountInfoResponse(PersonalAccount personalAccount) {
-        this.uniqCheckId = personalAccount.getUniqCheckId();
-        this.currency = personalAccount.getCurrency().getName();
-        this.sum = personalAccount.getSum();
-        this.createdAt = personalAccount.getCreatedAt();
-        this.updatedAt = personalAccount.getUpdatedAt();
-        this.type = personalAccount.getTypeAccount().getType();
-        this.isBlocked = personalAccount.isBlocked();
-        this.isDefault = personalAccount.isDefault();
-        this.createdBy = personalAccount.getCreatedBy();
-        this.updatedBy = personalAccount.getUpdateBy();
-    }
+//    public AccountInfoResponse(Account account) {
+//        this.uniqCheckId = account.getAccountNumber();
+//        this.currency = account.getCurrency().getName();
+//        this.sum = account.getSum();
+//        this.createdAt = account.getCreatedAt();
+//        this.updatedAt = account.getUpdatedAt();
+//        this.type = account.getTypeAccount().getType();
+//        this.isBlocked = account.isBlocked();
+//        this.isDefault = account.isDefault();
+//        this.createdBy = account.getCreatedBy();
+//        this.updatedBy = account.getUpdateBy();
+//    }
 }

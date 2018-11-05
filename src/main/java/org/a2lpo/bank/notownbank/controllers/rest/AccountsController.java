@@ -2,17 +2,16 @@ package org.a2lpo.bank.notownbank.controllers.rest;
 
 import org.a2lpo.bank.notownbank.exceptions.NoEntityException;
 import org.a2lpo.bank.notownbank.exceptions.VerificationNoEntityException;
-import org.a2lpo.bank.notownbank.model.Client;
-import org.a2lpo.bank.notownbank.model.accounts.Currency;
-import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
-import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
-import org.a2lpo.bank.notownbank.model.accounts.TypeAccountName;
+import org.a2lpo.bank.notownbank.model.accounts.eav.Account;
 import org.a2lpo.bank.notownbank.model.message.logging.Status;
-import org.a2lpo.bank.notownbank.payload.*;
+import org.a2lpo.bank.notownbank.payload.ApiResponse;
+import org.a2lpo.bank.notownbank.payload.CreateAccountRequest;
+import org.a2lpo.bank.notownbank.payload.PaymentRequest;
 import org.a2lpo.bank.notownbank.repos.AccountRepo;
 import org.a2lpo.bank.notownbank.repos.ClientRepo;
-import org.a2lpo.bank.notownbank.repos.CurrencyRepo;
-import org.a2lpo.bank.notownbank.repos.TypeRepo;
+import org.a2lpo.bank.notownbank.repos.accounts.CurrencyRepo;
+import org.a2lpo.bank.notownbank.repos.accounts.SubTypeRepo;
+import org.a2lpo.bank.notownbank.repos.accounts.TypeRepo;
 import org.a2lpo.bank.notownbank.security.CurrentUser;
 import org.a2lpo.bank.notownbank.security.UserPrincipal;
 import org.a2lpo.bank.notownbank.service.AccountService;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -45,6 +42,7 @@ public class AccountsController {
     private final TypeRepo typeRepo;
     private final AccountService accountService;
     private final LoggingService loggingService;
+    private final SubTypeRepo subTypeRepo;
 
 
     @Autowired
@@ -53,13 +51,15 @@ public class AccountsController {
                               AccountRepo accountRepo,
                               TypeRepo typeRepo,
                               AccountService accountService,
-                              LoggingService loggingService) {
+                              LoggingService loggingService,
+                              SubTypeRepo subTypeRepo) {
         this.clientRepo = clientRepo;
         this.currencyRepo = currencyRepo;
         this.accountRepo = accountRepo;
         this.typeRepo = typeRepo;
         this.accountService = accountService;
         this.loggingService = loggingService;
+        this.subTypeRepo = subTypeRepo;
     }
 
     /**
@@ -71,22 +71,22 @@ public class AccountsController {
      * @param userPrincipal авторизированный пользователь в Spring Security Context
      * @return возвращает список счетов в <code>List<AccountListResponse></code>
      */
-    @GetMapping
-    @PreAuthorize("hasRole('CLIENT')")
-    public List<AccountListResponse> accountList(@CurrentUser UserPrincipal userPrincipal) {
-        List<AccountListResponse> accountList = new ArrayList<>();
-        accountRepo.findAllByClient_User_Id(userPrincipal.getId())
-                .forEach(account ->
-                        accountList.add(new AccountListResponse(
-                                account.getUniqCheckId(),
-                                account.getSum(),
-                                account.getUpdatedAt(),
-                                account.getCurrency().getName(),
-                                account.getTypeAccount().getType())
-                        )
-                );
-        return accountList;
-    }
+//    @GetMapping
+//    @PreAuthorize("hasRole('CLIENT')")
+//    public List<AccountListResponse> accountList(@CurrentUser UserPrincipal userPrincipal) {
+//        List<AccountListResponse> accountList = new ArrayList<>();
+//        accountRepo.findAllByAccountHolder_User_Id(userPrincipal.getId())
+//                .forEach(account ->
+//                        accountList.add(new AccountListResponse(
+//                                account.getAccountNumber(),
+//                                account.getSum(),
+//                                account.getUpdatedAt(),
+//                                account.getCurrency().getCurrencyName(),
+//                                account.getType().getTypeName()
+//                        )
+//                ));
+//        return accountList;
+//    }
 
     /**
      * @param userPrincipal
@@ -95,22 +95,22 @@ public class AccountsController {
     @GetMapping
     @RequestMapping("{UUID}")
     public ResponseEntity<Object> getAccountInfo(@CurrentUser UserPrincipal userPrincipal,
-                                            @PathVariable("UUID") String uuid) {
-        PersonalAccount personalAccount;
+                                                 @PathVariable("UUID") String uuid) {
+        Account account;
         try {
-            personalAccount = accountRepo.findAccountByUUID(uuid).orElseThrow(
+            account = accountRepo.findAccountByUUID(uuid).orElseThrow(
                     () -> new VerificationNoEntityException("Account %s not found.", uuid)
             );
         } catch (VerificationNoEntityException e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
-        boolean verificationUser = personalAccount
-                .getClient()
+        boolean verificationUser = account
+                .getAccountHolder()
                 .getUser()
                 .getId()
                 .equals(userPrincipal.getId());
         if (verificationUser) {
-            return ResponseEntity.ok(new AccountInfoResponse(personalAccount));
+//            return ResponseEntity.ok(new AccountInfoResponse(account));
         }
         return new ResponseEntity<>(new ApiResponse(
                 false,
@@ -141,38 +141,42 @@ public class AccountsController {
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<ApiResponse> createAccount(@Valid @RequestBody CreateAccountRequest createRequest,
                                                      @CurrentUser UserPrincipal userPrincipal) {
-
-        if (createRequest.getTypeAccountName() == TypeAccountName.CREDIT)
-            return new ResponseEntity<>(
-                    new ApiResponse(false,
-                            "In order to open a credit account you must fill out a credit form, go to a special section for this."),
-                    HttpStatus.BAD_REQUEST);
-        //поиск указанной валюты.
-        Optional<Currency> optionalCurrency = currencyRepo.findByName(createRequest.getCurrencyName());
-        Optional<Client> optionalClient = clientRepo.findByUserId(userPrincipal.getId());
-        //проверка клиента
-        boolean checkedClients = optionalClient.isPresent() && optionalClient.get().isActive();
-        if (checkedClients) {
-            PersonalAccount personalAccount = new PersonalAccount(optionalClient.get(),
-                    optionalCurrency.get(),
-                    typeRepo.findByType(createRequest.getTypeAccountName()).get());
-            //поиск дефолтного счета клиента
-            boolean hasDefaultAccount = accountRepo.findDefaultAccounts(
-                    optionalClient.get().getId(),
-                    optionalCurrency.get().getId()).isPresent();
-            personalAccount.setDefault(!hasDefaultAccount);
-            accountRepo.save(personalAccount);
-
-            return ResponseEntity.ok(new ApiResponse(true,
-                    String.format("Congratulations, %s you created a new account. ClientCabinet StatusLog %s, Currency %s, ClientCabinet Number %s",
-                            personalAccount.getClient().getFirstName(),
-                            personalAccount.getTypeAccount().getType().toString(),
-                            personalAccount.getCurrency().getName(),
-                            personalAccount.getUniqCheckId())));
+        //Проверка приходящего DTO на тип счёта, и валюты
+        boolean checkedAccountRequest = createRequest.getTypeAccount().equalsIgnoreCase("debit") ||
+                createRequest.getTypeAccount().equalsIgnoreCase("accum");
+        if (checkedAccountRequest) {
+            //noinspection OptionalGetWithoutIsPresent
+            ApiResponse apiResponse = accountService.createPhysicalAccount(createRequest,
+                    clientRepo.findByUserId(userPrincipal.getId()).get());
+            return apiResponse.getSuccess() ?
+                    ResponseEntity.ok(apiResponse) : new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new ApiResponse(false,
-                "No found user or user is no active calling manager."), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(
+                new ApiResponse(false,
+                        "In order to open a credit account you must fill out a credit form, " +
+                                "go to a special section for this."), HttpStatus.BAD_REQUEST);
     }
+
+
+    //проверка клиента
+
+//
+//            Account account = new Account();
+//            //поиск дефолтного счета клиента
+//            boolean hasDefaultAccount = accountRepo.findDefaultAccounts(
+//                    optionalClient.get().getId(),
+//                    currency.get().getId()).isPresent();
+//            account.setDefault(!hasDefaultAccount);
+//            accountRepo.save(account);
+//
+//            return ResponseEntity.ok(new ApiResponse(true,
+//                    String.format("Congratulations, %s you created a new account. ClientCabinet StatusLog %s, Currency %s, ClientCabinet Number %s",
+//                            account.getAccountHolder().getFirstName(),
+//                            account.getTypeAccount().getType().toString(),
+//                            account.getCurrency().getName(),
+//                            account.getAccountNumber())));
+//        }
+
 
     /**
      * <b>Метод доступен только пользователям с Ролью Client</b>
@@ -197,12 +201,12 @@ public class AccountsController {
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<Object> sendMoney(@CurrentUser UserPrincipal userPrincipal,
                                             @Valid @RequestBody PaymentRequest paymentRequest) {
-        Optional<PersonalAccount> toAccount = accountRepo.findActiveAccountByUUID(paymentRequest.getToAccountId());
-        Optional<PersonalAccount> fromAccount = accountRepo.findActiveAccountByUUID(paymentRequest.getFromAccountId());
+        Optional<Account> toAccount = accountRepo.findActiveAccountByUUID(paymentRequest.getToAccountId());
+        Optional<Account> fromAccount = accountRepo.findActiveAccountByUUID(paymentRequest.getFromAccountId());
 
         //проверка автора запроса, в том что он хозяин счёта
         boolean isMasterAccountFrom = fromAccount.isPresent() &&
-                fromAccount.get().getClient().getUser().getId().equals(userPrincipal.getId());
+                fromAccount.get().getAccountHolder().getUser().getId().equals(userPrincipal.getId());
         if (!isMasterAccountFrom)
             return new ResponseEntity<>(new ApiResponse(false,
                     String.format("The sender %s is not the master of the account %s.",
@@ -259,8 +263,8 @@ public class AccountsController {
     @PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<ApiResponse> changeCurrency(@CurrentUser UserPrincipal userPrincipal,
                                                       @Valid @RequestBody PaymentRequest changeRequest) {
-        PersonalAccount from;
-        PersonalAccount to;
+        Account from;
+        Account to;
         try {   //проверка на правильность ввода счетов.
             from = accountRepo
                     .findActiveAccountByUUID(changeRequest.getFromAccountId())
@@ -276,22 +280,23 @@ public class AccountsController {
         //проверка на блокировку счетов
         if (to.isBlocked() || from.isBlocked()) return new ResponseEntity<>(new ApiResponse(
                 false, String.format("Accounts %s is blocked, transfer not possible.",
-                from.isBlocked() ? from.getUniqCheckId() : to.getUniqCheckId())),
+                from.isBlocked() ? from.getAccountNumber() : to.getAccountNumber())),
                 HttpStatus.BAD_REQUEST);
 
         //проверка является ли пользователь хозяином счётов.
-        boolean isMasterAccount = from.getClient().getUser().getId().equals(userPrincipal.getId()) &&
-                to.getClient().getUser().getId().equals(userPrincipal.getId());
+        boolean isMasterAccount = from.getAccountHolder().getUser().getId().equals(userPrincipal.getId()) &&
+                to.getAccountHolder().getUser().getId().equals(userPrincipal.getId());
         if (!isMasterAccount) return new ResponseEntity<>(new ApiResponse(
                 false, String.format("User %s is not the owner of the account %s",
                 userPrincipal.getUsername(),
-                from.getUniqCheckId())),
+                from.getAccountNumber())),
                 HttpStatus.FORBIDDEN);
 
-        ApiResponse apiResponse = accountService.currencyOperation(from, to, changeRequest.getSum());
-
-        if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
-        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+//        ApiResponse apiResponse = accountService.currencyOperation(from, to, changeRequest.getSum());
+//
+//        if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
+//        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return null;
     }
 
     /**
@@ -319,44 +324,44 @@ public class AccountsController {
      * <code>String message</code> - текстовое сообщение
      * о результатах выполненной операции в JSON формате.
      */
-    @PostMapping
-    @RequestMapping("sold")
-    @PreAuthorize("hasRole('CLIENT')")
-    public ResponseEntity<ApiResponse> soldCurrency(@CurrentUser UserPrincipal userPrincipal,
-                                                    @Valid @RequestBody TradingCurrencyRequest sellRequest) {
-        Optional<Currency> curRuble = currencyRepo.findByName(CurrencyName.RUB);
-        PersonalAccount from;
-        PersonalAccount to;
-        try {
-            //поиск и проверка номера счета.
-            from = accountRepo.findActiveAccountByUUID(sellRequest.getAccountId())
-                    .orElseThrow(() -> new VerificationNoEntityException("Not found account or %s is inactive, for client.",
-                            sellRequest.getAccountId()));
-
-            //noinspection OptionalGetWithoutIsPresent because curRuble cant be null
-            to = accountRepo.findDefaultAccounts(from.getClient().getId(), curRuble.get().getId())
-                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s %s",
-                            sellRequest.getAccountId(),
-                            from.getClient().getLastName()));
-
-        } catch (Exception e) {
-            logger.error("ERROR", e);
-            loggingService.createLog(e.toString(), Status.ERROR);
-            return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
-        }
-        //проверка пользователя на принадлежность к счету отправителя
-        boolean isCorrectAccount = userPrincipal.getId().equals(from.getClient().getUser().getId());
-        if (!isCorrectAccount) return new ResponseEntity<>(new ApiResponse(
-                false,
-                String.format("User %s is not the owner of the account %s",
-                        userPrincipal.getUsername(),
-                        from.getUniqCheckId())),
-                HttpStatus.FORBIDDEN);
-
-        ApiResponse apiResponse = accountService.currencyOperation(from, to, sellRequest.getSum());
-        if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
-        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @PostMapping
+//    @RequestMapping("sold")
+//    @PreAuthorize("hasRole('CLIENT')")
+//    public ResponseEntity<ApiResponse> soldCurrency(@CurrentUser UserPrincipal userPrincipal,
+//                                                    @Valid @RequestBody TradingCurrencyRequest sellRequest) {
+//        Optional<Currency> curRuble = currencyRepo.findByName(CurrencyName.RUB);
+//        Account from;
+//        Account to;
+//        try {
+//            //поиск и проверка номера счета.
+//            from = accountRepo.findActiveAccountByUUID(sellRequest.getAccountId())
+//                    .orElseThrow(() -> new VerificationNoEntityException("Not found account or %s is inactive, for client.",
+//                            sellRequest.getAccountId()));
+//
+//            //noinspection OptionalGetWithoutIsPresent because curRuble cant be null
+//            to = accountRepo.findDefaultAccounts(from.getAccountHolder().getId(), curRuble.get().getId())
+//                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s %s",
+//                            sellRequest.getAccountId(),
+//                            from.getAccountHolder().getLastName()));
+//
+//        } catch (Exception e) {
+//            logger.error("ERROR", e);
+//            loggingService.createLog(e.toString(), Status.ERROR);
+//            return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
+//        }
+//        //проверка пользователя на принадлежность к счету отправителя
+//        boolean isCorrectAccount = userPrincipal.getId().equals(from.getAccountHolder().getUser().getId());
+//        if (!isCorrectAccount) return new ResponseEntity<>(new ApiResponse(
+//                false,
+//                String.format("User %s is not the owner of the account %s",
+//                        userPrincipal.getUsername(),
+//                        from.getAccountNumber())),
+//                HttpStatus.FORBIDDEN);
+//
+//        ApiResponse apiResponse = accountService.currencyOperation(from, to, sellRequest.getSum());
+//        if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
+//        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     /**
      * <b>Метод доступен только пользователям с Ролью Client</b><br>
@@ -371,36 +376,37 @@ public class AccountsController {
      * @return
      * @throws IOException
      */
-    @PostMapping
-    @RequestMapping("buy")
-    @PreAuthorize("hasRole('CLIENT')")
-    public ResponseEntity<ApiResponse> buyCurrency(@CurrentUser UserPrincipal userPrincipal,
-                                                   @Valid @RequestBody BuyCurrencyRequest buyRequest) {
-
-        //noinspection OptionalGetWithoutIsPresent currency and client neve be to null in this method
-        Currency currencyPay = currencyRepo.findByName(CurrencyName.RUB).get();
-        //noinspection OptionalGetWithoutIsPresent
-        Client client = clientRepo.findByUserId(userPrincipal.getId()).get();
-        Currency currencyBuy;
-        PersonalAccount from;
-        PersonalAccount to;
-        try {
-            currencyBuy = currencyRepo.findByName(buyRequest.getCurrencyName())
-                    .orElseThrow(() -> new VerificationNoEntityException("Currency %s not valid value.",
-                            buyRequest.getCurrencyName().toString()));
-            from = accountRepo.findActiveDefaultAccounts(client.getId(), currencyPay.getId())
-                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s",
-                            currencyPay.getName().toString(), client.getLastName()));
-            to = accountRepo.findActiveDefaultAccounts(client.getId(), currencyBuy.getId())
-                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s",
-                            currencyBuy.getName().toString(), client.getLastName()));
-        } catch (Exception e) {
-            logger.error("ERROR", e);
-            loggingService.createLog(e.toString(), Status.ERROR);
-            return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
-        }
-        ApiResponse apiResponse = accountService.buyCurrency(from, to, buyRequest.getSum());
-        if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
-        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @PostMapping
+//    @RequestMapping("buy")
+//    @PreAuthorize("hasRole('CLIENT')")
+//    public ResponseEntity<ApiResponse> buyCurrency(@CurrentUser UserPrincipal userPrincipal,
+//                                                   @Valid @RequestBody BuyCurrencyRequest buyRequest) {
+//
+//        //noinspection OptionalGetWithoutIsPresent currency and client neve be to null in this method
+//        Currency currencyPay = currencyRepo.findByName(CurrencyName.RUB).get();
+//        //noinspection OptionalGetWithoutIsPresent
+//        Client client = clientRepo.findByUserId(userPrincipal.getId()).get();
+//        Currency currencyBuy;
+//        Account from;
+//        Account to;
+//        try {
+//            currencyBuy = currencyRepo.findByName(buyRequest.getCurrencyName())
+//                    .orElseThrow(() -> new VerificationNoEntityException("Currency %s not valid value.",
+//                            buyRequest.getCurrencyName().toString()));
+//            from = accountRepo.findActiveDefaultAccounts(client.getId(), currencyPay.getId())
+//                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s",
+//                            currencyPay.getName().toString(), client.getLastName()));
+//            to = accountRepo.findActiveDefaultAccounts(client.getId(), currencyBuy.getId())
+//                    .orElseThrow(() -> new VerificationNoEntityException("Not found active, %s defaults account, for client %s",
+//                            currencyBuy.getName().toString(), client.getLastName()));
+//        } catch (Exception e) {
+//            logger.error("ERROR", e);
+//            loggingService.createLog(e.toString(), Status.ERROR);
+//            return new ResponseEntity<>(new ApiResponse(false, e.toString()), HttpStatus.BAD_REQUEST);
+//        }
+//        ApiResponse apiResponse = accountService.buyCurrency(from, to, buyRequest.getSum());
+//        if (apiResponse.getSuccess()) return ResponseEntity.ok(apiResponse);
+//        return new ResponseEntity<>(apiResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+//}
 }

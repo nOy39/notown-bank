@@ -1,7 +1,7 @@
 package org.a2lpo.bank.notownbank.payload;
 
 import lombok.Data;
-import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
+import org.a2lpo.bank.notownbank.model.accounts.eav.Currency;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Data
 public class BuyCurrencyRequest {
     @NotNull
-    private CurrencyName currencyName;
+    private Currency currencyName;
     @NotNull
     private BigDecimal sum;
 }

@@ -110,7 +110,7 @@ public class AuthController {
             return ResponseEntity.ok(new AuthenticationClientResponse(jwt,
                     RoleName.ROLE_CLIENT,
                     optionalClientByUserId.get(),
-                    accountRepo.findAllByClient_User_Id(userPrincipal.getId())));
+                    accountRepo.findAllByAccountHolder_User_Id(userPrincipal.getId())));
         }
         Optional<Manager> optionalManagerByUserId = managerRepo.findByUser_Id(userPrincipal.getId());
         return optionalManagerByUserId.<ResponseEntity<?>>map(manager -> ResponseEntity.ok(new AuthenticationManagerResponse(jwt,
@@ -164,7 +164,7 @@ public class AuthController {
                 client -> ResponseEntity.ok(
                         new AuthenticationClientResponse("",
                                 RoleName.ROLE_CLIENT,
-                                client, accountRepo.findAllByClient_User_Id(userPrincipal.getId()))))
+                                client, accountRepo.findAllByAccountHolder_User_Id(userPrincipal.getId()))))
                 .orElseGet(
                         () -> ResponseEntity.ok(
                                 new AuthenticationManagerResponse("",

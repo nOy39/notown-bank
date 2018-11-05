@@ -1,6 +1,6 @@
 package org.a2lpo.bank.notownbank.service;
 
-import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
+import org.a2lpo.bank.notownbank.model.accounts.eav.Account;
 import org.a2lpo.bank.notownbank.model.message.logging.History;
 import org.a2lpo.bank.notownbank.repos.HistoryRepo;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,8 @@ public class HistoryService {
      * @param outgoingSum сумма списания
      * @param incomingSum сумма зачисления
      */
-    public void saveCurrentTransfer(PersonalAccount from,
-                                    PersonalAccount to,
+    public void saveCurrentTransfer(Account from,
+                                    Account to,
                                     BigDecimal outgoingSum,
                                     BigDecimal incomingSum) {
         outgoingOperation(from, to, outgoingSum);
@@ -39,9 +39,9 @@ public class HistoryService {
      * @param to
      * @param sum
      */
-    private void incomingOperation(PersonalAccount from,
-                                  PersonalAccount to,
-                                  BigDecimal sum) {
+    private void incomingOperation(Account from,
+                                   Account to,
+                                   BigDecimal sum) {
         historyRepo.save(new History(to, from, BigDecimal.valueOf(0.00), sum));
     }
 
@@ -51,8 +51,8 @@ public class HistoryService {
      * @param to
      * @param outgoingSum
      */
-    private void outgoingOperation(PersonalAccount from,
-                                   PersonalAccount to,
+    private void outgoingOperation(Account from,
+                                   Account to,
                                    BigDecimal outgoingSum) {
         historyRepo.save(new History(from, to, outgoingSum, BigDecimal.valueOf(0.00)));
     }

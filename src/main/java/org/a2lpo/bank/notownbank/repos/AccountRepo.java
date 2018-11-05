@@ -1,6 +1,6 @@
 package org.a2lpo.bank.notownbank.repos;
 
-import org.a2lpo.bank.notownbank.model.accounts.PersonalAccount;
+import org.a2lpo.bank.notownbank.model.accounts.eav.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,39 +10,32 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AccountRepo extends JpaRepository<PersonalAccount, Long> {
-
-    /**
-     * Поиск всех счетов по USER_ID
-     * @param id user_id
-     * @return List<PersonalAccount>
-     */
-    List<PersonalAccount> findAllByClient_User_Id(Long id);
-
+public interface AccountRepo extends JpaRepository<Account, Long> {
+    List<Account> findAllByAccountHolder_User_Id(Long id);
     /**
      * метод поиска активных(не заблокированных) счетов по номеру счета, используется для отправки/оплаты/переводов денежных средст
      * @param uuid номер счёта
-     * @return Optional<PersonalAccount>
+     * @return Optional<Account>
      */
     @Query(nativeQuery = true,
             value = "select * from account a " +
                     "where a.is_blocked = false " +
                     "and a.uniq_check_id = :uuid")
-    Optional<PersonalAccount> findActiveAccountByUUID(@Param("uuid") String uuid);
+    Optional<Account> findActiveAccountByUUID(@Param("uuid") String uuid);
 
     /**
      * метод поиска по номеру счета, используется для получения денежных средств
      * @param uuid номер счёта
-     * @return Optional<PersonalAccount>
+     * @return Optional<Account>
      */
-    @Query(value = "select a from PersonalAccount a where a.uniqCheckId = ?1")
-    Optional<PersonalAccount> findAccountByUUID(String uuid);
+    @Query(value = "select a from Account a where a.accountNumber = ?1")
+    Optional<Account> findAccountByUUID(String uuid);
 
     /**
      * метод поиска дефолтных счетов, используются для дефолтных приходов денежных средств(продажа валюты, онлайн переводы)
      * @param clientId - id клиента из таблицы клиентов
      * @param currency - валюта к которой принадлежит дефолтный счет
-     * @return Optional<PersonalAccount>
+     * @return Optional<Account>
      */
     @Query(nativeQuery = true,
     value = "select * from account a " +
@@ -50,13 +43,13 @@ public interface AccountRepo extends JpaRepository<PersonalAccount, Long> {
             "and a.is_default = true " +
             "and a.currency_id = :currency " +
             "limit 1")
-    Optional<PersonalAccount> findDefaultAccounts(@Param("clientId")Long clientId, @Param("currency")Long currency);
+    Optional<Account> findDefaultAccounts(@Param("clientId")Long clientId, @Param("currency")Long currency);
 
     /**
      * метод поиска не заблокированного дефолтного счета, используется для деволных расчетов с этого счета(покупка валюты, онлайн покупки)
      * @param clientId - id клиента из таблицы клиентов
      * @param currency - валюта к которой принадлежит дефолтный счет
-     * @return Optional<PersonalAccount>
+     * @return Optional<Account>
      */
     @Query(nativeQuery = true,
     value = "select * from account a " +
@@ -65,7 +58,7 @@ public interface AccountRepo extends JpaRepository<PersonalAccount, Long> {
             "and a.currency_id = :currency " +
             "and a.is_blocked = false " +
             "limit 1")
-    Optional<PersonalAccount> findActiveDefaultAccounts(@Param("clientId")Long clientId, @Param("currency")Long currency);
+    Optional<Account> findActiveDefaultAccounts(@Param("clientId")Long clientId, @Param("currency")Long currency);
 
     @Query(nativeQuery = true,
     value = "select * from account a " +
@@ -73,6 +66,9 @@ public interface AccountRepo extends JpaRepository<PersonalAccount, Long> {
             "on a.client_id = c2.id " +
             "where c2.user_id = :userId " +
             "and a.uniq_check_id = :accountNumber")
-    Optional<PersonalAccount> findPersonalAccountByUserIdAndByAccountNumber(@Param("userId")Long userId,
-                                                                            @Param("accountNumber")String accNumber);
+    Optional<Account> findPersonalAccountByUserIdAndByAccountNumber(@Param("userId")Long userId,
+                                                                    @Param("accountNumber")String accNumber);
+
+    @Query(nativeQuery = true, value = "select count(id) from account ac where ac.type_id = :typeId and ac.sub_type_id = :subTypeId")
+    Long countAccount(@Param("typeId")Long typeId, @Param("subTypeId") Long subTypeId);
 }

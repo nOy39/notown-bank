@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.a2lpo.bank.notownbank.model.accounts.CurrencyName;
 import org.a2lpo.bank.notownbank.payload.CurrentCurseCurrency;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -77,8 +76,8 @@ public class CurrencyService {
      * @param name         валюта которую мы ищем в списке.
      * @return возвращаемый объект класса <code>CurrentCurseCurrency</code>
      */
-    public CurrentCurseCurrency getCurse(List<CurrentCurseCurrency> currencyList, CurrencyName name) {
-        return Iterables.tryFind(currencyList,
-                currency -> name.toString().equals(currency.getCharCode())).or(new CurrentCurseCurrency());
-    }
+//    public CurrentCurseCurrency getCurse(List<CurrentCurseCurrency> currencyList, CurrencyName name) {
+//        return Iterables.tryFind(currencyList,
+//                currency -> name.toString().equals(currency.getCharCode())).or(new CurrentCurseCurrency());
+//    }
 }
