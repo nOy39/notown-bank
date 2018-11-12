@@ -1,12 +1,12 @@
 <template>
-<div>
-    <h3>History</h3>
-</div>
+<h3>
+    Payment
+</h3>
 </template>
 
 <script>
     export default {
-        name: "HistoryPage"
+        name: "Payment"
     }
 </script>
 

@@ -2,7 +2,8 @@ export default {
     state: {
         test: '',
         error: '',
-        loading: false
+        loading: false,
+        responseMessage: '',
     },
     mutations: {
         SET_TEST(state, payload) {
@@ -13,6 +14,9 @@ export default {
         },
         IS_LOADING(state, payload) {
             state.loading = payload
+        },
+        SET_RESPONSE_MESSAGE(state, payload) {
+            state.responseMessage = payload
         }
     },
     getters: {
@@ -24,6 +28,9 @@ export default {
         },
         getLoading(state) {
             return state.loading
+        },
+        getResponseMessage(state) {
+            return state.responseMessage
         }
     },
     actions: {
@@ -35,6 +42,11 @@ export default {
         },
         isLoading({commit}, payload) {
             commit('IS_LOADING', payload)
+        },
+        setResponseMessage({commit}, payload) {
+            if (!payload.status) {
+                commit('SET_ERROR', payload.message)
+            }
         }
     }
 }

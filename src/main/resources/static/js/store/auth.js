@@ -47,7 +47,13 @@ export default {
                     return true
                 })
                 .catch(e => {
-                    commit('SET_ERROR', e.message)
+                    console.log(e.response)
+                    if (e.response.data) {
+                        commit('SET_ERROR', e.response.data.message)
+                    } else {
+                        commit('SET_ERROR', e.message)
+                    }
+                    commit('IS_LOADING', false)
                 })
         },
         /**

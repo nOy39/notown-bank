@@ -53,6 +53,7 @@
                 })
                     .then(response => {
                         this.$store.dispatch('setCurrentAcc', response.data)
+                        console.log(response)
                     })
                     .then(() => {
                         AXIOS({
@@ -83,8 +84,12 @@
                             })
                     })
                     .catch(e => {
-                        this.$store.dispatch('setError', e.message)
-                        this.$store.dispatch('isLoading', true)
+                        if (e.response.data) {
+                            this.$store.dispatch('setResponseMessage', e.response.data)
+                        } else {
+                            this.$store.dispatch('setError', e.message)
+                        }
+                        this.$store.dispatch('isLoading', false)
                     })
             }
         }

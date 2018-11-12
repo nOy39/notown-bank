@@ -2,12 +2,12 @@
     <div>
         <b-row>
             <b-col sm="4" v-for="acc in accounts"
-                   :key="acc.uniqCheckId">
+                   :key="acc.accountNumber">
                 <b-card :bg-variant="typeInfo(acc)"
                         text-variant="white"
-                        :header="acc.uniqCheckId"
+                        :header="acc.accountNumber"
                         class="text-center my-3"
-                        @click="openAcc(acc.uniqCheckId)">
+                        @click="openAcc(acc.accountNumber)">
                     <!--style="max-width: 30%;">-->
                     <h3>{{acc.sum + ' '}}<i :class="currencyInfo(acc)"></i></h3>
                 </b-card>
@@ -37,13 +37,13 @@
         },
         methods: {
             typeInfo(obj) {
-                let typeName = obj.typeAccount.type
+                let typeName = obj.type.typeName
                 if (typeName in this.types) {
                     return this.types[typeName]
                 }
             },
             currencyInfo(obj) {
-                let currencyName = obj.currency.name
+                let currencyName = obj.currency.currencyName
                 if (currencyName in this.currency) {
                     return this.currency[currencyName]
                 }

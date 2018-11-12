@@ -9,6 +9,7 @@ import org.a2lpo.bank.notownbank.model.accounts.eav.TypeAccount;
 import org.a2lpo.bank.notownbank.model.message.logging.Status;
 import org.a2lpo.bank.notownbank.payload.ApiResponse;
 import org.a2lpo.bank.notownbank.payload.CreateAccountRequest;
+import org.a2lpo.bank.notownbank.payload.CurrentCurseCurrency;
 import org.a2lpo.bank.notownbank.repos.AccountRepo;
 import org.a2lpo.bank.notownbank.repos.BankAccountRepo;
 import org.a2lpo.bank.notownbank.repos.accounts.CurrencyRepo;
@@ -21,11 +22,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.List;
 
 /**
  * Сервис работы со счетами
+ * todo задокументировать методы создания проверить валидации.
  */
 @Service
 public class AccountService {
@@ -124,6 +128,11 @@ public class AccountService {
         return primaryValidation && (rubleVerif || currencyValidation);
     }
 
+//TODO: Сделать метод перевода с одного счёта на другой
+//TODO: Сделать метод перевода с одной карты на другу
+//TODO: Сделать метод покупки валюты у банка
+//TODO: Сделать метод продажи валюты банку
+//TODO: Сделать метод обмена валюты с одной на другую
     /**
      * <b>Метод осуществления перевода.</b><br>
      * Метод выполняет перевод со счета from на счёт to суммы в размере sum.
@@ -145,7 +154,7 @@ public class AccountService {
                                     BigDecimal sum) {
         MathContext mc = new MathContext(2);
         //проверка верификации счетов.
-        boolean verifyPayment = to.getCurrency() == from.getCurrency() &&
+        boolean verifyPayment = to.getCurrency().equals(from.getCurrency()) &&
                 from.getSum().doubleValue() >= sum.doubleValue();
         if (verifyPayment) {
             try {
@@ -182,19 +191,7 @@ public class AccountService {
                     "or the beneficiary’s account has a different currency type.");
         }
     }
-
-//    public ApiResponse createPhysicalAccount(Client client,
-//                                 TypeAccount typeAccount,
-//                                 SubTypeAccount subTypeAccount,
-//                                 Currency currency) {
-//        Long countAccount = accountRepo.countAccount(typeAccount.getId(), subTypeAccount.getId());
-//        Account account = new Account(client, typeAccount, subTypeAccount, currency, ++countAccount);
-//        accountRepo.save(account);
-//        return new ApiResponse(true, String.format(
-//                "Congratulations you created accounts. Number you account '%s'." +
-//                "For detailed views open this 'url'", account.getAccountNumber()));
-//    }
-
+//
 //    /**
 //     * <b>Метод валютных операций ПОКУПКА/ПРОДАЖА/ОБМЕН</b><br>
 //     * Методом <code>currencyService</code> получаем список валют. При получении валют

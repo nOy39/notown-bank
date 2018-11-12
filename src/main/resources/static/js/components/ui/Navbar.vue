@@ -9,7 +9,7 @@
                     <b-nav-item to="/browse">Browse</b-nav-item>
                     <b-nav-item-dropdown text="Accounts" right>
                         <b-dropdown-item to="/current">Current</b-dropdown-item>
-                        <b-dropdown-item to="/history">History</b-dropdown-item>
+                        <b-dropdown-item to="/history" disabled>History</b-dropdown-item>
                     </b-nav-item-dropdown>
                     <b-nav-item to="/payment">Payment and Transaction</b-nav-item>
                     <b-nav-item to="/credit">Credit</b-nav-item>

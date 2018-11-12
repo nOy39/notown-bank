@@ -18,6 +18,7 @@ import java.util.Set;
 
 /**
  * Клиентская таблица
+ * todo избавиться от stackoverflow client
  */
 @Entity
 @Table(name = "clients", uniqueConstraints = {
@@ -67,6 +68,9 @@ public class Client extends UserDateAudit {
 
     @OneToMany(mappedBy = "accountHolder", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Account> clientAccounts;
+
+    public Client() {
+    }
 
     public Client(String firstName,
                   String lastName,

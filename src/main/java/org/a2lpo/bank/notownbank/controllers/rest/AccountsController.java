@@ -4,6 +4,7 @@ import org.a2lpo.bank.notownbank.exceptions.NoEntityException;
 import org.a2lpo.bank.notownbank.exceptions.VerificationNoEntityException;
 import org.a2lpo.bank.notownbank.model.accounts.eav.Account;
 import org.a2lpo.bank.notownbank.model.message.logging.Status;
+import org.a2lpo.bank.notownbank.payload.AccountInfoResponse;
 import org.a2lpo.bank.notownbank.payload.ApiResponse;
 import org.a2lpo.bank.notownbank.payload.CreateAccountRequest;
 import org.a2lpo.bank.notownbank.payload.PaymentRequest;
@@ -101,7 +102,7 @@ public class AccountsController {
             account = accountRepo.findAccountByUUID(uuid).orElseThrow(
                     () -> new VerificationNoEntityException("Account %s not found.", uuid)
             );
-        } catch (VerificationNoEntityException e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
         boolean verificationUser = account
@@ -110,7 +111,7 @@ public class AccountsController {
                 .getId()
                 .equals(userPrincipal.getId());
         if (verificationUser) {
-//            return ResponseEntity.ok(new AccountInfoResponse(account));
+            return ResponseEntity.ok(new AccountInfoResponse(account));
         }
         return new ResponseEntity<>(new ApiResponse(
                 false,

@@ -83,6 +83,7 @@ public class Account extends UserDateAudit {
                 subTypeAccount.getSubTypeCode(),
                 currency.getCurrencyCode(),
                 personalCode));
+        this.sum = BigDecimal.valueOf(0);
     }
 
     private StringBuilder accountBuilder(String typeCode, String subTypeCode, String currencyCode, String personalCode) {

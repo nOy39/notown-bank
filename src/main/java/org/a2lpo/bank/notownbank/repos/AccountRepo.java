@@ -28,8 +28,8 @@ public interface AccountRepo extends JpaRepository<Account, Long> {
      * @param uuid номер счёта
      * @return Optional<Account>
      */
-    @Query(value = "select a from Account a where a.accountNumber = ?1")
-    Optional<Account> findAccountByUUID(String uuid);
+    @Query(nativeQuery = true, value = "select * from account ac where ac.account_number = :accNumber")
+    Optional<Account> findAccountByUUID(@Param("accNumber") String accNumber);
 
     /**
      * метод поиска дефолтных счетов, используются для дефолтных приходов денежных средств(продажа валюты, онлайн переводы)

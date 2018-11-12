@@ -32,7 +32,7 @@ public interface HistoryRepo extends JpaRepository<History, Long> {
      */
     @Query(nativeQuery = true,
             value = "select * from  history h " +
-                        "left outer join  account a on h.main_account = a.id  where a.uniq_check_id = :uuid " +
+                        "left outer join  account a on h.main_account = a.id  where a.account_number = :uuid " +
                             "and h.user_id = :userId " +
                             "and h.created_at > :firstDate " +
                             "and h.created_at < :lastDate " +

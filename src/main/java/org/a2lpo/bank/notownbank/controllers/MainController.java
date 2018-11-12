@@ -11,6 +11,7 @@ public class MainController {
     @Value("${spring.profiles.active}")
     private String profile;
 
+
     @RequestMapping(path = "/", method = RequestMethod.GET)
     public String main(Model model) {
         model.addAttribute("isDevMode", "dev".equals(profile));

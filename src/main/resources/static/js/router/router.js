@@ -8,6 +8,8 @@ import ManagerCabinet from 'pages/ManagerCabinet.vue'
 import Account from 'pages/account/AccountPage.vue'
 import TestSub from 'pages/TestSub.vue'
 import Current from 'pages/account/Current.vue'
+import History from 'pages/account/HistoryPage.vue'
+import Payment from 'pages/account/Payment.vue'
 
 Vue.use(Router)
 
@@ -47,6 +49,19 @@ export default new Router({
             props: true,
             component: Account,
             beforeEnter: ClientGuards
+        },
+        {
+            path: '/history/:id',
+            name: 'History',
+            props: true,
+            component: History,
+            beforeEnter: ClientGuards
+        },
+        {
+            path: '/payment',
+            name: 'Payment',
+            props: true,
+            component: Payment
         },
         {
             path: '/:id',

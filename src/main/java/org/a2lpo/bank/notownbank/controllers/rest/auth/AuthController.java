@@ -22,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -96,12 +97,18 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail(),
-                        loginRequest.getPassword()
-                )
-        );
+        Authentication authentication = null;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsernameOrEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+        } catch (AuthenticationException e) {
+            return new ResponseEntity<>(new ApiResponse(false, String.format("Wrong authorize request, '%s' or '%s' maybe wrong",
+                    loginRequest.getUsernameOrEmail(), loginRequest.getPassword())), HttpStatus.FORBIDDEN);
+        }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.generateToken(authentication);
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -113,10 +120,11 @@ public class AuthController {
                     accountRepo.findAllByAccountHolder_User_Id(userPrincipal.getId())));
         }
         Optional<Manager> optionalManagerByUserId = managerRepo.findByUser_Id(userPrincipal.getId());
+        Authentication finalAuthentication = authentication;
         return optionalManagerByUserId.<ResponseEntity<?>>map(manager -> ResponseEntity.ok(new AuthenticationManagerResponse(jwt,
                 RoleName.ROLE_MANAGER,
                 manager) {
-        })).orElseGet(() -> ResponseEntity.ok(new JwtAuthenticationResponse(jwt, (UserPrincipal) authentication.getPrincipal())));
+        })).orElseGet(() -> ResponseEntity.ok(new JwtAuthenticationResponse(jwt, (UserPrincipal) finalAuthentication.getPrincipal())));
     }
 
     /**

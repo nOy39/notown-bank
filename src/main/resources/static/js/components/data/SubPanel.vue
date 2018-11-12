@@ -16,12 +16,12 @@
                 </tr>
                 <tr v-for="item in accounts">
                     <td>
-                        <router-link :to="'/account/'+item.uniqCheckId">{{item.uniqCheckId}}</router-link>
+                        <router-link :to="'/account/'+item.accountNumber">{{item.accountNumber}}</router-link>
                     </td>
                     <td>{{item.cardNumber}}</td>
                     <td>{{!item.blocked ? 'Active' : 'Blocked'}}</td>
-                    <td>{{item.typeAccount.type}}</td>
-                    <td>{{item.currency.name}}</td>
+                    <td>{{item.type.typeName}}</td>
+                    <td>{{item.currency.currencyName}}</td>
                     <td>{{item.sum}}</td>
                 </tr>
             </table>

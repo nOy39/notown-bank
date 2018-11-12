@@ -5,7 +5,7 @@
                     header-tag="header"
                     :footer="'<em>Balance: </em><b>'+accountInfo.sum+'</b>'"
                     footer-tag="footer"
-                    :title="'ACCOUNT NUMBER: <em>' + accountInfo.uniqCheckId + '</em>'">
+                    :title="'ACCOUNT NUMBER: <em>' + accountInfo.accountNumber + '</em>'">
                 <b-list-group>
                     <b-list-group-item>
                         <dl class="row">
@@ -36,7 +36,7 @@
                         <dl class="row">
                             <dt class="col-sm-3">History account:</dt>
                             <dd class="col-sm-9"><em>
-                                <router-link :to="'/history/'+accountInfo.uniqCheckId">View all history transaction this account</router-link>
+                                <router-link :to="'/history/'+accountInfo.accountNumber">View all history transaction this account</router-link>
                             </em></dd>
                         </dl>
                     </b-list-group-item>
