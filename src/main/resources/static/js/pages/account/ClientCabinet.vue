@@ -1,7 +1,6 @@
 <template>
     <div>
         <sub-panel :accounts="accounts"/>
-
         <DockPanel v-if="shortHistory" :history="shortHistory"/>
     </div>
 </template>

@@ -1,12 +1,17 @@
 <template>
-<h3>
-    Payment
-</h3>
+    <div>
+        <h3>
+            Payment
+        </h3>
+        <payment-selector></payment-selector>
+    </div>
 </template>
 
 <script>
+    import PaymentSelector from "../../components/data/PaymentSelector.vue";
     export default {
-        name: "Payment"
+        name: "Payment",
+        components: {PaymentSelector}
     }
 </script>
 
